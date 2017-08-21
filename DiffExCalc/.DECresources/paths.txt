@@ -1,0 +1,6 @@
+Config.prefs:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/prefs.txt
+Config.RFile_Name:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/DESEQ_CORVERA_withoutLfcChange.R
+Config.MANUAL:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/DESeq2.pdf
+Config.VERSe:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/getVersion.R
+Config.SAMPLE_DATA_FILE:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/sample_data.csv
+Config.SAMPLE_METADATA_FILE:/Users/agastya/Documents/GitHub/DECalc/DiffExCalc/.DECresources/sample_metadata.csv
