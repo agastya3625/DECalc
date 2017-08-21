@@ -1,5 +1,5 @@
 # DECalc
-This repo holds the code for DECalc, a GUI for DESeq2, an R program taht enables users to run differential gene expression studies. 
+This repo holds the code for DECalc, a GUI for DESeq2, an R program that enables users to run differential gene expression studies. 
 
 Documentation folder: documentation
 
