@@ -2,6 +2,7 @@ package com.backEnd;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
@@ -33,7 +34,7 @@ public class Config {
 	/**
 	 * R script to be executed
 	 */
-	public static String RFile_Name = "DESEQ_CORVERA_withlfcChange.R";
+	public static String RFile_Name = "DESEQ_CORVERA_withoutLfcChange.R";
 
 	/**
 	 * DESeq2 manual, used to show user additional help.
@@ -193,7 +194,12 @@ public class Config {
 	 * defines a rectangle in the left bottom corner of the window that is a template for placing buttons. 
 	 */
 	public static Rectangle LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 35, Config.BUTTON_WIDTH, Config.textHt);
-	
+
+	/**
+	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
+	 */
+	public static Rectangle TOP_LEFT_CORNER = new Rectangle(25, 25, Config.BUTTON_WIDTH, Config.textHt);
+
 	/**
 	 * progress bar to monitor the run progress 
 	 */
@@ -274,6 +280,25 @@ public class Config {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * This method calculates the total number of elements in a 2D ArrayList.
+	 * Example: if the ArrayList contains 3 other lists, each with 4 elements,
+	 * this method return 12.
+	 * 
+	 * @param List2D:
+	 *            List to get all elements from
+	 * 
+	 * @return int number of elements
+	 * 
+	 */
+	public static int getSize(ArrayList<ArrayList<String>> List2D) {
+		int toReturn = 0;
+		for (int i = 0; i < List2D.size(); i++) {
+			toReturn += List2D.get(i).size();
+		}
+		return toReturn;
 	}
 	
 	

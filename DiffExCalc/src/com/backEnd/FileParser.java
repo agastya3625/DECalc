@@ -44,7 +44,7 @@ public class FileParser {
 	private Scanner in; // Scanner dedicated to files
 
 	private Gene toAdd; // Gene to add to lists, used in several methods
-	public String[] tags;
+	public String[] tags = "Toxo_10d_SIG, Toxo_28d_SIG, WNV_10d_SIG, WNV_29d_SIG".split(", ");
 
 	/**
 	 * This method is used to handle raw data files. These files created
@@ -87,7 +87,7 @@ public class FileParser {
 		while (scans[0].hasNext()) {
 			Gene toAdd = new Gene();
 			for (int i = 0; i < scans.length; i++) {
-				String[] s = scans[i].nextLine().split(",");
+				String[] s = scans[i].nextLine().split("\t");
 				if (toAdd.getgeneID() == null) {
 					toAdd.setgeneID(s[0]);
 				}
@@ -100,6 +100,74 @@ public class FileParser {
 			scans[i].close();
 		}
 		makeMatrix(g, file);
+	}
+
+	public void createSigMatrix(File[] fileList, File fileOut, int threshold) throws IOException, FileNotFoundException {
+		ArrayList<GenesList> masterList = new ArrayList<GenesList>();
+		for(int i = 0; i < fileList.length;i++){
+			masterList.add(toList(fileList[i], ""));
+		}
+		GenesList finalList = condense2DList(masterList);
+		makeMatrix(finalList, null, fileOut);
+//		Scanner[] scans = new Scanner[fileList.length];
+//		FileInputStream[] inputs = new FileInputStream[fileList.length];
+//		for (int i = 0; i < inputs.length; i++) {
+//			inputs[i] = new FileInputStream(fileList[i]);
+//		}
+//		for (int i = 0; i < fileList.length; i++) {
+//			scans[i] = new Scanner(inputs[i]);
+//			scans[i].nextLine();
+//		}
+//		for (int i = 0; i < scans.length; i++) {
+//			while (scans[i].hasNext()) {
+//				String[] s = scans[i].nextLine().split(",");
+//				Gene toAdd = new Gene();
+//				if (toAdd.getgeneID() == null) {
+//					toAdd.setgeneID(s[0]);
+//				}
+//				if(g.contains(toAdd)){
+//					toAdd.addToCounts(Math.round(Math.round(Double.parseDouble((s[])))));
+//				} else{
+//					toAdd.addToCounts(0);
+//					g.add(toAdd);
+//				}
+//				
+//			}
+//			
+//		}
+//		for (int i = 0; i < fileList.length; i++) {
+//			inputs[i].close();
+//			scans[i].close();
+//		}
+	}
+	
+	public void getP_Vals(File toParse, File fileOut, int threshold) throws IOException, FileNotFoundException {
+		FileInputStream inputs = new FileInputStream(toParse);
+		PrintWriter pout = new PrintWriter(fileOut);
+		Scanner scan = new Scanner(inputs);
+		String title = scan.nextLine();
+		title = "Gene ID"+title.substring(0, title.indexOf(",,,,"));
+		pout.println(title);
+		while (scan.hasNext()) {
+			boolean print = false;
+			String[] s = scan.nextLine().split(",");
+			String toPrint = s[0] + ",";
+			for (int i = 1; i < s.length; i++) {
+				double lfc = Double.parseDouble((s[i]));
+				if (lfc > threshold || lfc < threshold * -1) {
+					print = true;
+					toPrint = toPrint + lfc + ",";
+				} else {
+					toPrint = toPrint + "0,";
+				}
+			}
+			if (print) {
+				pout.println(toPrint);
+			}
+		}
+		pout.close();
+		scan.close();
+		inputs.close();
 	}
 
 	/**
@@ -116,7 +184,7 @@ public class FileParser {
 	 *            File matrix being constructed.
 	 * 
 	 * @throws FileNotFoundException
-	 *             inf file cannot be found
+	 *             if file cannot be found
 	 */
 	public void makeMatrix(GenesList g, File file) throws FileNotFoundException {
 		out = new PrintWriter(file); // prints to file
@@ -126,8 +194,9 @@ public class FileParser {
 		String string = Arrays.toString(tags);
 		string = string.replace("[", "");
 		string = string.replace("]", "");
+		string = string.replace(" ", "");
 		temp = temp.concat(string);
-		out.println(g.getDerivedFile());
+		out.println(temp);
 		for (int i = 0; i < g.size(); i++) {
 			out.println(g.get(i).getgeneID() + ", " + g.get(i).getCountsArray());
 		}
@@ -185,13 +254,12 @@ public class FileParser {
 	public GenesList toList(File filetoParse, String type) throws FileNotFoundException {
 		fileIn = new FileInputStream(filetoParse);
 		in = new Scanner(fileIn);
+		in.nextLine();
 		GenesList g = new GenesList();
-		String name = filetoParse.getName();
-		g.setDerivedFile(name.substring(0, name.indexOf(".")));
+		String name = filetoParse.getName().substring(0, filetoParse.getName().indexOf(".csv"));
+		g.setDerivedFile(name);
 		String line;
 		String[] lineVals;
-		g.setDerivedFile(in.nextLine());
-
 		// parses line by line to add all values to the the GenesList
 		while (in.hasNext()) {
 			line = in.nextLine();
@@ -200,16 +268,18 @@ public class FileParser {
 			String ID = lineVals[0];
 			ID = ID.replace("\"", "");
 			toAdd.setgeneID(ID);
-			if (type.equals("int")) {
-				for (int i = 1; i < lineVals.length; i++) {
-					toAdd.addToCounts(Double.parseDouble(lineVals[i]));
-				}
-				// toAdd.setgenCount(Math.round(Math.round(Double.parseDouble(lineVals[1]))));
-				// toAdd.addToCounts(Math.round(Math.round(Double.parseDouble(lineVals[1]))));
-			} else {
-				// toAdd.setgenCount(Double.parseDouble(lineVals[1]));
-				// toAdd.addToCounts(Double.parseDouble(lineVals[1]));
-			}
+			toAdd.setCount(Double.parseDouble(lineVals[2]));
+			toAdd.addToCounts(Double.parseDouble(lineVals[2]));
+			// if (type.equals("int")) {
+//			for (int i = 1; i < lineVals.length; i++) {
+//				toAdd.addToCounts(Double.parseDouble(lineVals[i]));
+//			}
+			// toAdd.setgenCount(Math.round(Math.round(Double.parseDouble(lineVals[1]))));
+			// toAdd.addToCounts(Math.round(Math.round(Double.parseDouble(lineVals[1]))));
+			// } else {
+			// toAdd.setgenCount(Double.parseDouble(lineVals[1]));
+			// toAdd.addToCounts(Double.parseDouble(lineVals[1]));
+			// }
 			toAdd.addToFiles(name);
 			g.add(toAdd);
 		}
@@ -252,13 +322,17 @@ public class FileParser {
 				// from the secondaryList, or "NS," (Not Significant) is printed
 				// in place of the value.
 				if (toUse.files.contains(tags[k])) {
-					toPrint = toPrint.concat(toUse.countsArray.get(toUse.files.indexOf(tags[k])) + ", ");
+						if(toUse.files.size() ==1){
+							toPrint = toPrint.concat(toUse.getCount()+", ");
+						} else{
+							toPrint = toPrint.concat(toUse.countsArray.get(toUse.files.indexOf(tags[k])) + ", ");
+						}
 				} else {
 					// Gene tempGene = secondaryList.get(secondaryList
 					// .indexOf(toUse));
 					// toPrint = toPrint.concat(tempGene.countsArray
 					// .get(tempGene.files.indexOf(tags[k])) + ", ");
-					toPrint = toPrint.concat("NS, ");
+					toPrint = toPrint.concat("0, ");
 				}
 			}
 			out.println(toPrint);
@@ -283,7 +357,7 @@ public class FileParser {
 	public GenesList condense2DList(ArrayList<GenesList> List2D) {
 		GenesList masterList = new GenesList(); // list to be returned
 		for (int i = 0; i < List2D.size(); i++) {
-			masterList.setDerivedFile(List2D.get(i).getDerivedFile());
+			//masterList.setDerivedFile(List2D.get(i).getDerivedFile());
 			for (int j = 0; j < List2D.get(i).size(); j++) {
 				Gene temp = List2D.get(i).get(j);
 				// adds to list if Gene is not a duplicate
@@ -295,12 +369,12 @@ public class FileParser {
 					// duplicate
 					// // are added to the counts and files arrays of the Gene
 					// // currently in the list.
-					// int index = masterList.indexOf(temp);
-					// Gene g = masterList.get(index);
-					// g.addToFiles(List2D.get(i).getDerivedFile());
-					// g.addToCounts(Math.round(Math.round(temp.getgenCount())));
-					// masterList.set(index, g);
-					masterList.get(masterList.indexOf(temp)).addToCounts(temp.getgenCount());
+					int index = masterList.indexOf(temp);
+					Gene g = masterList.get(index);
+					g.addToFiles(List2D.get(i).getDerivedFile());
+					g.addToCounts(temp.getgenCount());
+					masterList.set(index, g);
+					//masterList.get(masterList.indexOf(temp)).addToCounts(temp.getgenCount());
 
 				}
 			}
@@ -386,7 +460,7 @@ public class FileParser {
 		fileIn = new FileInputStream(f);
 		in = new Scanner(fileIn);
 		GenesList g = new GenesList();
-		g.setDerivedFile(in.nextLine());
+		g.setDerivedFile(f.getName());
 		while (in.hasNext()) {
 			Gene toAdd = new Gene();
 			String[] line = in.nextLine().split(",");

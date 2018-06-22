@@ -4,8 +4,11 @@ import java.awt.Desktop;
 import java.io.*;
 import java.util.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 import com.backEnd.Config;
@@ -26,6 +29,8 @@ public class MainWindow {
 	private Color WHITE; // standard white color of text
 	private String[] cmds = new String[3]; // stores command line args for
 											// DiffExCalc.java
+	private String delimiterData;
+	private String delimiterMeta;
 	private ArrayList<ArrayList<String>> comps;
 	private ArrayList<ButtonList> CheckBoxes;
 	private Text data; // data file Text field
@@ -33,9 +38,9 @@ public class MainWindow {
 	private Text res; // results folder text field
 	// list of comparisons to perform
 	private Display display; // display of the app
-	private static Label statusLabel; //shows current run status
-	private static Button runButton, backButton; //"Run" and "Back" buttons 
-	private GC gc; //allows for drawing on the GUI background
+	private static Label statusLabel; // shows current run status
+	private static Button runButton, backButton; // "Run" and "Back" buttons
+	private GC gc; // allows for drawing on the GUI background
 
 	/**
 	 * This constructor makes the main window and starts the UI generation
@@ -169,6 +174,15 @@ public class MainWindow {
 		setHelpButtons();
 	}
 
+//	/**
+//	 * This method makes the "Browse" buttons for each folder/file the user
+//	 * uploads.
+//	 * 
+//	 */
+//	private void setDelimiters() {
+//		
+//	}
+	
 	/**
 	 * This method makes the "Browse" buttons for each folder/file the user
 	 * uploads.
@@ -327,15 +341,30 @@ public class MainWindow {
 		for (int i = 0; i < comps.size(); i++) {
 			CheckBoxes.add(new ButtonList(comps.get(i).size()));
 		}
-		int idx = 0;
-		int x = 25;
-		int y = 50;
-		int offset = 10;
 		Label label = new Label(shell, SWT.CENTER);
 		label.setText("Select Comparisons to run: ");
 		label.setForeground(WHITE);
 		label.setFont(new Font(label.getDisplay(), new FontData("Arial", 16, SWT.BOLD)));
 		label.setBounds(25, 25, 225, Config.textHt);
+
+		shell.setLayout(new GridLayout(1, false));
+		Group top = new Group(shell, SWT.NONE);
+		top.setLayout(new GridLayout(1, false));
+		GridData secondData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		secondData.minimumHeight = 10;
+		top.setLayoutData(secondData);
+
+		Group first = new Group(shell, SWT.NONE);
+		first.setLayout(new GridLayout(1, false));
+		GridData firstData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		firstData.heightHint = Config.SHELL_HEIGHT - 200;
+		first.setLayoutData(firstData);
+		ScrolledComposite firstScroll = new ScrolledComposite(first, SWT.V_SCROLL);
+		firstScroll.setLayout(new GridLayout(1, false));
+		firstScroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		Composite firstContent = new Composite(firstScroll, SWT.NONE);
+		firstContent.setLayout(new GridLayout(1, false));
+		firstContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		// checkboxes are shown in columns with 30 comparisons in each check
 		// box.
 		for (int i = 0; i < comps.size(); i++) {
@@ -344,17 +373,8 @@ public class MainWindow {
 			final int i2 = i;
 			// this part of the loop sets a checkbox to allow the user to select
 			// all comparisons within a single file.
-			Button file = new Button(shell, SWT.CHECK);
-			file.setText("metadata file " + (i + 1));
-			if (idx < 30) {
-				file.setBounds(x, y, 175, Config.textHt);
-				idx++;
-				y += 20;
-			} else {
-				x += 175;
-				idx = 0;
-				y = 50;
-			}
+			Button file = new Button(top, SWT.CHECK);
+			file.setText("Metadata file " + (i + 1));
 			file.setForeground(WHITE);
 			file.addSelectionListener(new SelectionAdapter() {
 				@Override
@@ -369,21 +389,19 @@ public class MainWindow {
 			// this loop sets the checkboxes for the individual comparisons
 			// within a file
 			for (int j = 0; j < comps.get(i).size(); j++) {
-				Button b = new Button(shell, SWT.CHECK);
+				Button b = new Button(firstContent, SWT.CHECK);
 				b.setText(comps.get(i).get(j));
-				if (idx < 30) {
-					b.setBounds(x + offset, y, 175, Config.textHt);
-					idx++;
-					y += 20;
-				} else {
-					x += 175;
-					idx = 0;
-					y = 50;
-				}
 				b.setForeground(WHITE);
 				CheckBoxes.get(i).add(b);
 			}
 		}
+		firstScroll.setContent(firstContent);
+		firstScroll.setExpandHorizontal(true);
+		firstScroll.setExpandVertical(true);
+		firstScroll.setMinSize(
+				new Point(Config.SHELL_WIDTH, Config.SHELL_HEIGHT + CheckBoxes.size() * Config.textHt * 2 + 500));
+		shell.pack();
+		shell.setSize(Config.SHELL_WIDTH, Config.SHELL_HEIGHT);
 
 	}
 
@@ -407,7 +425,7 @@ public class MainWindow {
 		backButton = new Button(shell, SWT.PUSH);
 		backButton.setText("<- Back");
 		backButton.addListener(SWT.Selection, event -> goBack());
-		backButton.setBounds(Config.LEFT_CORNER);
+		backButton.setBounds(Config.TOP_LEFT_CORNER);
 	}
 
 	/**
@@ -449,7 +467,7 @@ public class MainWindow {
 				Text text = new Text(shell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
 				text.setBounds(Config.SHELL_WIDTH - 618, 115, 600, 500);
 				dia.setMessage("Run Started. Run information is stored in:\n" + info.getPath()
-						+ ". \n\nProjected run time: " + ((DiffExCalc.getSize(compars)) + 4) + " minutes.");
+						+ ". \n\nProjected run time: " + ((Config.getSize(compars)) + 4) + " minutes.");
 				dia.open();
 				Button startNew = new Button(shell, SWT.PUSH);
 				startNew.setBounds(Config.RIGHT_CORNER);
@@ -461,7 +479,7 @@ public class MainWindow {
 					@Override
 					public void run() {
 						try {
-							DiffExCalc.main(cmds, compars, progressBar, info, statusLabel, text);
+							DiffExCalc.main(cmds, compars, progressBar, info, statusLabel, text, delimiterData, delimiterMeta);
 							display.asyncExec(new Runnable() {
 								@Override
 								public void run() {
@@ -632,11 +650,10 @@ public class MainWindow {
 		changeRFile = new MenuItem(helpMenu, SWT.PUSH);
 		changeRFile.setText("&Upload R File");
 		changeRFile.addListener(SWT.Selection, event -> changeRFile());
-		
+
 		showMenu = new MenuItem(helpMenu, SWT.PUSH);
 		showMenu.setText("&Show R File");
 		showMenu.addListener(SWT.Selection, event -> showHelp(Config.RFile_Name, "R"));
-
 
 		shell.setMenuBar(menuBar);
 	}
@@ -755,4 +772,6 @@ public class MainWindow {
 		}
 		return toReturn;
 	}
+	
+	
 }

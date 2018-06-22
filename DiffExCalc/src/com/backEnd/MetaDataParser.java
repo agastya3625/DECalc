@@ -58,7 +58,7 @@ public class MetaDataParser {
 	}
 
 	// makes data files
-	public static String[] DataNameGenerator(File folder, String foldername) {
+	private static String[] DataNameGenerator(File folder, String foldername) {
 		File[] toReturn = new File[folder.listFiles(Config.FileFilter).length];
 		int i = 0;
 		for (File f : folder.listFiles(Config.FileFilter)) {

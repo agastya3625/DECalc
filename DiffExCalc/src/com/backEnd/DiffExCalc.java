@@ -15,12 +15,11 @@ import org.eclipse.swt.widgets.*;
  */
 
 public class DiffExCalc {
-	private static File dataMatrix, metafolder, outputDir, matrixDir;
+	private static File dataMatrix, metafolder, outputDir;
 	private static StatusUpdate su;
 	private static ProgressBar prog;
 	private static FileParser fp = new FileParser();
-	private static ArrayList<GenesList> deMultiplexedMatrix;
-	private static boolean dir;
+	// private static ArrayList<GenesList> deMultiplexedMatrix;
 
 	/**
 	 * The main method contains the main algorithm that runs the R script.
@@ -46,7 +45,7 @@ public class DiffExCalc {
 	 * 
 	 */
 	public static void main(String[] args, ArrayList<ArrayList<String>> comps, ProgressBar progressBar, File runInfo,
-			Label label, Text text) {
+			Label label, Text text, String delimiterData, String delimiterMeta) {
 		if (runInfo.exists()) {
 			String absPath = runInfo.getAbsolutePath();
 			runInfo.delete();
@@ -55,13 +54,17 @@ public class DiffExCalc {
 		long startTime = System.currentTimeMillis();
 		// used to display the time taken to run.
 		try {
+			dataMatrix = new File(args[0]);
+			metafolder = new File(args[1]);
+			outputDir = new File(args[2]);
+			filePreProcessing(delimiterData, delimiterMeta);
 			su = new StatusUpdate(runInfo, label, text);
-			su.appendStatusLabel("Run Started...");
+			headers(args);
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					try {
 						prog = progressBar;
-						prog.setMaximum(getSize(comps) + 1);
+						prog.setMaximum(Config.getSize(comps) + 1);
 						prog.setMinimum(0);
 					} catch (Exception e) {
 						e.printStackTrace(System.err);
@@ -69,44 +72,16 @@ public class DiffExCalc {
 
 				}
 			});
-			su.sendToFile("\n######## Run Information #########\n");
-			su.sendToFile("Data File: " + args[0] + "\n");
-			su.sendToFile("metadata folder: " + args[1] + "\n");
-			su.sendToFile("Results placed in: " + args[2] + "\n");
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date d = new Date();
-			su.sendToFile("Date and time of run start: " + dateFormat.format(d));
-			dataMatrix = new File(args[0]);
-			metafolder = new File(args[1]);
-			outputDir = new File(args[2]);
-			dataMatrix.setReadable(true);
-			metafolder.setReadable(true);
-			outputDir.setWritable(true, false);
-			// match the clones
-			matrixDir = new File(outputDir.getPath() + "/data matrices");
-			matrixDir.mkdirs();
-			dir = preProcessingCheck();
-			if (dir) {
-				su.appendStatusLabel("De-Multiplexing matrices");
-				multiplexMatrices();
-				// executes the R script
-				su.sendToFile("\n######## DESeq2 Script Information #########");
-				executeR(matrixDir, metafolder, outputDir, comps);
-			} else {
-				su.sendToFile("\n######## DESeq2 Script Information #########");
-				executeR(dataMatrix, metafolder, outputDir, comps);
-			}
-			su.sendToFile("\n######## Script Finished #########");
-			matrixDir.delete();
-			d = new Date();
-			su.sendToFile("\nDate and time of run end: " + dateFormat.format(d));
+			// executes the R script
+			su.sendToFile("\n######## DESeq2 Script Information #########");
+			executeR(dataMatrix, metafolder, outputDir, comps);
+			footers();
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
 				public void run() {
 					prog.setSelection(prog.getMaximum());
 				}
 			});
-			su.appendStatusLabel("Run Finished.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -122,39 +97,36 @@ public class DiffExCalc {
 	}
 
 	/**
-	 * This method makes the matrices required per metadata file. This way, even
-	 * though the data matrix has all trials, it is not all passed through the
-	 * DESeq2 program at once, thereby optimizing its run time.
+	 * This method calculates the run time of the program and displays it the
+	 * the HH:MM:SS.millisec format.
 	 * 
-	 * @param matrixForm:
-	 *            String[] showing what clones need to be in the matrix and in
-	 *            what order
-	 * @param deMultiplexedMatrix:
-	 *            matrix represented by an ArrayList of GenesLists, each one
-	 *            representing a column in the matrix.
-	 * @param metafile:
-	 *            metadata file.
-	 * @param matrixFolder:
-	 *            folder to put the made matrices into.
+	 * @param startTime:
+	 *            stating time of the program, taken as the time at the start of
+	 *            the program
 	 * 
-	 * @throws IOException
-	 *             caused by FileInputStream
+	 * @return String HH:MM:SS.millisec format String
+	 * 
 	 */
-	public static void MatrixMaker(String[] matrixForm, ArrayList<GenesList> deMultiplexedMatrix, File metafile,
-			File matrixFolder) throws IOException {
-		FileParser fp = new FileParser();
-		// creates a list of GenesLists representing the matrix. This list is
-		// then converted into a data matrix.
-		ArrayList<GenesList> List2D = new ArrayList<GenesList>();
-		for (int i = 0; i < matrixForm.length; i++) {
-			List2D.add(fetchList(deMultiplexedMatrix, matrixForm[i]));
-		}
-		File datamat = new File(matrixFolder.getPath() + "/"
-				+ metafile.getName().substring(0, metafile.getName().indexOf(".csv") - 1) + "_DataMatrix.csv");
-		// System.out.println(datamat);
-		GenesList matrix = fp.condense2DList(List2D);
-		fp.tags = matrixForm;
-		fp.makeMatrix(matrix, datamat);
+	private static String showRunTime(long startTime) {
+		long endTime = System.currentTimeMillis();
+		int millisec = Math.round(((endTime - startTime)));
+		int hours = millisec / 3600000;
+		int minutes = (millisec / 60000) - hours * 60;
+		int seconds = (millisec / 1000) - minutes * 60 - hours * 3600;
+		int milliseconds = millisec - seconds * 1000 - minutes * 60000 - hours * 3600000;
+		return "Total Run Time: " + String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":"
+				+ String.format("%02d", seconds) + "." + String.format("%03d", milliseconds);
+
+	}
+
+	private static void headers(String[] args) throws IOException {
+		su.sendToFile("Date and time of run start: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
+		su.sendToFile("\n######## Run Information #########\n");
+		su.sendToFile("Data File: " + args[0] + "\n");
+		su.sendToFile("metadata folder: " + args[1] + "\n");
+		su.sendToFile("Results placed in: " + args[2] + "\n");
+		su.appendStatusLabel("Run Started...");
+
 	}
 
 	/**
@@ -184,16 +156,26 @@ public class DiffExCalc {
 	 * @throws IOException
 	 *             caused by PrintWriter
 	 */
-	private static File bashMaker(File datamatrix, File[] metadata, String outdir, ArrayList<ArrayList<String>> comps)
+	private static File bashMaker(File datamatrix, File metadata, String outdir, ArrayList<ArrayList<String>> comps)
 			throws IOException {
 		File[] dataFiles;
+		File[] metadatalist;
 		boolean dataDirectory = false;
+		boolean metadataDirectory = false;
 		if (datamatrix.isDirectory()) {
 			dataDirectory = true;
 			dataFiles = datamatrix.listFiles(Config.FileFilter);
 		} else {
 			dataDirectory = false;
 			dataFiles = null;
+		}
+		if (metadata.isDirectory()) {
+			metadataDirectory = true;
+			metadatalist = metadata.listFiles(Config.FileFilter);
+
+		} else {
+			metadataDirectory = false;
+			metadatalist = null;
 		}
 		// bash file
 
@@ -211,11 +193,21 @@ public class DiffExCalc {
 		String data = "\"" + datamatrix.getPath() + "\"";
 		// creates the actual bash file with correct command line arguments for
 		// the R script.
-		for (int i = 0; i < metadata.length; i++) {
+		int loops = 1;
+		if (metadatalist != null) {
+			loops = metadatalist.length;
+		}
+		for (int i = 0; i < loops; i++) {
 			// parses the metadata file and gets the possible values of the last
 			// column (the only variable column per our metadata file structure)
 			// and passes it into the R script.
-			ArrayList<ArrayList<String>> elems = MetaDataParser.parse(metadata[i]);
+			File meta;
+			if (metadatalist != null && metadataDirectory) {
+				meta = metadatalist[i];
+			} else {
+				meta = metadata;
+			}
+			ArrayList<ArrayList<String>> elems = MetaDataParser.parse(meta);
 			elems.remove(0);
 			String[] elements = new String[elems.size()];
 			for (int j = 0; j < elems.size(); j++) {
@@ -252,9 +244,9 @@ public class DiffExCalc {
 				data = "\"" + dataFiles[i].getPath() + "\"";
 			}
 			if (!comps.get(i).isEmpty()) {
-				String command = Config.R_COMMAND + " " + "\""+fileName+"\"" + " " + data + " " + "\"" + metadata[i] + "\"" + " "
-						+ compars + " " + "\"" + outdir + "\"" + " " + conts;
-				su.sendToFile("Command Line for metadata file " + metadata[i] + ":\n\n" + command+"\n\n");
+				String command = Config.R_COMMAND + " " + "\"" + fileName + "\"" + " " + data + " " + "\"" + meta + "\""
+						+ " " + compars + " " + "\"" + outdir + "\"" + " " + conts;
+				su.sendToFile("Command Line for metadata file " + meta + ":\n\n" + command + "\n\n");
 				pout.println(command);
 			}
 		}
@@ -283,7 +275,7 @@ public class DiffExCalc {
 	private static void executeR(File data, File metadata, File results, ArrayList<ArrayList<String>> comps)
 			throws IOException {
 		// makes the bash file
-		File bash = bashMaker(data, metadata.listFiles(Config.FileFilter), results.getPath(), comps);
+		File bash = bashMaker(data, metadata, results.getPath(), comps);
 		bash.setExecutable(true);
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
@@ -343,6 +335,72 @@ public class DiffExCalc {
 		bash.delete();
 	}
 
+	private static void footers() throws IOException {
+		su.sendToFile("\n######## Script Finished #########");
+		su.sendToFile("\nDate and time of run end: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
+		su.appendStatusLabel("Run Finished.");
+	}
+
+	private static void filePreProcessing(String delimiter, String delimiterMeta) throws IOException {
+		if (dataMatrix.isFile()) {
+			if (!dataMatrix.getName().endsWith(".csv")) {
+				dataMatrix = ConvertToCSV(dataMatrix, delimiter);
+			}
+		} else {
+			for (File f : dataMatrix.listFiles(Config.FileFilter)) {
+				if (!f.getName().endsWith(".csv")) {
+					f = ConvertToCSV(f, delimiter);
+				}
+			}
+		}
+		if (metafolder.isFile()) {
+			if (!metafolder.getName().endsWith(".csv")) {
+				metafolder = ConvertToCSV(metafolder, delimiterMeta);
+			}
+
+		} else {
+			for (File f : metafolder.listFiles(Config.FileFilter)) {
+				if (!f.getName().endsWith(".csv")) {
+					f = ConvertToCSV(f, delimiterMeta);
+				}
+			}
+		}
+		dataMatrix.setReadable(true);
+		metafolder.setReadable(true);
+		outputDir.setWritable(true, false);
+	}
+
+	/**
+	 * additional converter that takes in a file
+	 * 
+	 * @param tsv:
+	 *            file to convert
+	 * 
+	 * @return .csv File
+	 * 
+	 * @throws IOException
+	 *             caused by FileInputStream
+	 */
+	private static File ConvertToCSV(File tsv, String delimiter) throws IOException {
+		FileInputStream fileIn = new FileInputStream(tsv);
+		Scanner scan = new Scanner(fileIn);
+		File outfile = new File(tsv.getPath().substring(0, tsv.getName().indexOf(".")) + ".csv");
+		PrintWriter out = new PrintWriter(outfile);
+		while (scan.hasNext()) {
+			String temp = scan.nextLine();
+			temp = temp.replace(",", ";");
+			temp = temp.replace(delimiter, ",");
+			out.println(temp);
+		}
+		scan.close();
+		out.close();
+		fileIn.close();
+		return outfile;
+	}
+	//////////////////////////////////////////////////////////////////////////////////////
+	// DEPRECATED METHODS BELOW //
+	//////////////////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * This method returns a GenesList based on the biological trial name. It is
 	 * used in building the data matrices that are passed through the
@@ -358,6 +416,9 @@ public class DiffExCalc {
 	 *            contain-used for parsing.
 	 * 
 	 * @return GenesList for the biological replicate in question.
+	 * 
+	 *         6/20/18 functionality replaced by R script
+	 * @deprecated
 	 */
 	private static GenesList fetchList(ArrayList<GenesList> deMultiplexedMatrix, String tag) {
 		for (GenesList f : deMultiplexedMatrix) {
@@ -432,49 +493,6 @@ public class DiffExCalc {
 		return toReturn;
 	}
 
-	private static void dataPreProcessing() throws IOException {
-		if (dataMatrix.isFile()) {
-			if (dataMatrix.getName().endsWith(".csv")) {
-				deMultiplexedMatrix = fp.MatrixDemultiplexer(dataMatrix);
-			} else if (dataMatrix.getName().endsWith(".tsv")) {
-				deMultiplexedMatrix = fp.MatrixDemultiplexer(TSVtoCSV.TSVtoCSVcon(dataMatrix));
-			}
-		} else {
-			deMultiplexedMatrix = new ArrayList<GenesList>();
-			for (File f : dataMatrix.listFiles(Config.FileFilter)) {
-				if (f.getName().endsWith(".csv")) {
-					deMultiplexedMatrix.add(fp.toList(f, null));
-				} else if (f.getName().endsWith(".tsv")) {
-					deMultiplexedMatrix.add(fp.toList(TSVtoCSV.TSVtoCSVcon(f), "int"));
-				}
-			}
-		}
-	}
-
-	/**
-	 * This method checks the metadata files, converts them to csvs if
-	 * necessary.
-	 * 
-	 * @throws IOException
-	 *             caused by TSVtoCSV
-	 */
-	private static void metaPreProcessing() throws IOException {
-		if (metafolder.isFile()) {
-			if (metafolder.getName().endsWith(".tsv") || metafolder.getName().endsWith(".txt")) {
-				File temp = TSVtoCSV.TSVtoCSVcon(metafolder);
-				metafolder = temp;
-			}
-
-		} else {
-			for (File f : metafolder.listFiles(Config.FileFilter)) {
-				if (f.getName().endsWith(".tsv") || f.getName().endsWith(".txt")) {
-					File temp = TSVtoCSV.TSVtoCSVcon(f);
-					f = temp;
-				}
-			}
-		}
-	}
-
 	/**
 	 * This method checks the data file/folder and determines if it needs to be
 	 * demultiplexed. If the data file has every trial in the same order that
@@ -486,12 +504,17 @@ public class DiffExCalc {
 	 *             caused by MetaDataParser
 	 * 
 	 * @return true if pre-processing is necessary, false if not
+	 * 
+	 *         6/18/18 moved this function into R script because R can do it
+	 *         faster
+	 * @deprecated
 	 */
 	private static boolean preProcessingCheck() throws IOException {
 		boolean toReturn = false;
 		if (dataMatrix.isFile()) {
 			String fileTitle = fp.getTitle(dataMatrix).substring(fp.getTitle(dataMatrix).indexOf(",") + 1,
 					fp.getTitle(dataMatrix).length());
+			fileTitle = fileTitle.replace(" ", "");
 			if (metafolder.isDirectory()) {
 				// compares rows of metadata file with the header of the data
 				// matrix to check equality for each metadata file
@@ -511,6 +534,7 @@ public class DiffExCalc {
 				String metaTrials = MetaDataParser.parse(metafolder).get(0).toString();
 				metaTrials = metaTrials.replace("[", "");
 				metaTrials = metaTrials.replace("]", "");
+				metaTrials = metaTrials.replace(" ", "");
 				if (!fileTitle.equals(metaTrials)) {
 					toReturn = true;
 				}
@@ -521,68 +545,77 @@ public class DiffExCalc {
 	}
 
 	/**
-	 * This method combines the data files (or data matrix) to the combination
-	 * of each metadata file.
+	 * // * This method combines the data files (or data matrix) to the
+	 * combination // * of each metadata file. // * // * 6/18/18 moved this
+	 * function into R because it's faster // * // * @throws IOException // *
+	 * caused by MetaDataParser // * // * @deprecated // * //
+	 */
+
+	/**
+	 * This method makes the matrices required per metadata file. This way, even
+	 * though the data matrix has all trials, it is not all passed through the
+	 * DESeq2 program at once, thereby optimizing its run time.
+	 * 
+	 * @param matrixForm:
+	 *            String[] showing what clones need to be in the matrix and in
+	 *            what order
+	 * @param deMultiplexedMatrix:
+	 *            matrix represented by an ArrayList of GenesLists, each one
+	 *            representing a column in the matrix.
+	 * @param metafile:
+	 *            metadata file.
+	 * @param matrixFolder:
+	 *            folder to put the made matrices into.
 	 * 
 	 * @throws IOException
-	 *             caused by MetaDataParser
+	 *             caused by FileInputStream
 	 * 
+	 *             6/20/18 functionality replaced, can be found in R script
+	 * @deprecated
 	 */
-	private static void multiplexMatrices() throws IOException {
-		dataPreProcessing();
-		metaPreProcessing();
-		// stores all of the String[]s that have the matrix forms
-		String[][] matrixForms = new String[metafolder.listFiles(Config.FileFilter).length][];
-		for (int i = 0; i < matrixForms.length; i++) {
-			matrixForms[i] = MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).toArray(
-					new String[MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).size()]);
+	private static void MatrixMaker(String[] matrixForm, ArrayList<GenesList> deMultiplexedMatrix, File metafile,
+			File matrixFolder) throws IOException {
+		FileParser fp = new FileParser();
+		// creates a list of GenesLists representing the matrix. This list is
+		// then converted into a data matrix.
+		ArrayList<GenesList> List2D = new ArrayList<GenesList>();
+		for (int i = 0; i < matrixForm.length; i++) {
+			List2D.add(fetchList(deMultiplexedMatrix, matrixForm[i]));
 		}
-		// makes each matrix
-		for (int i = 0; i < matrixForms.length; i++) {
-			MatrixMaker(matrixForms[i], deMultiplexedMatrix, metafolder.listFiles(Config.FileFilter)[i], matrixDir);
-		}
+		File datamat = new File(matrixFolder.getPath() + "/"
+				+ metafile.getName().substring(0, metafile.getName().indexOf(".csv") - 1) + "_DataMatrix.csv");
+		// System.out.println(datamat);
+		GenesList matrix = fp.condense2DList(List2D);
+		fp.tags = matrixForm;
+		fp.makeMatrix(matrix, datamat);
+		dataMatrix = datamat;
 	}
+	// private static void multiplexMatrices() throws IOException {
+	// stores all of the String[]s that have the matrix forms
+	// String[][] matrixForms;
+	// if (metafolder.isDirectory()) {
+	// matrixForms = new
+	// String[metafolder.listFiles(Config.FileFilter).length][];
+	// for (int i = 0; i < matrixForms.length; i++) {
+	// matrixForms[i] =
+	// MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).toArray(
+	// new
+	// String[MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).size()]);
+	// }
+	// for (int i = 0; i < matrixForms.length; i++) {
+	// MatrixMaker(matrixForms[i], deMultiplexedMatrix,
+	// metafolder.listFiles(Config.FileFilter)[i], null);
+	// }
+	// } else {
+	// matrixForms = new String[1][];
+	// matrixForms[0] = MetaDataParser.parse(metafolder).get(0)
+	// .toArray(new String[MetaDataParser.parse(metafolder).get(0).size()]);
+	// for (int i = 0; i < matrixForms.length; i++) {
+	// MatrixMaker(matrixForms[i], deMultiplexedMatrix, metafolder, null);
+	// }
+	// }
+	// makes each matrix
 
-	/**
-	 * This method calculates the run time of the program and displays it the
-	 * the HH:MM:SS.millisec format.
-	 * 
-	 * @param startTime:
-	 *            stating time of the program, taken as the time at the start of
-	 *            the program
-	 * 
-	 * @return String HH:MM:SS.millisec format String
-	 * 
-	 */
-	private static String showRunTime(long startTime) {
-		long endTime = System.currentTimeMillis();
-		int millisec = Math.round(((endTime - startTime)));
-		int hours = millisec / 3600000;
-		int minutes = (millisec / 60000) - hours * 60;
-		int seconds = (millisec / 1000) - minutes * 60 - hours * 3600;
-		int milliseconds = millisec - seconds * 1000 - minutes * 60000 - hours * 3600000;
-		return "Total Run Time: " + String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":"
-				+ String.format("%02d", seconds) + "." + String.format("%03d", milliseconds);
-
-	}
-
-	/**
-	 * This method calculates the total number of elements in a 2D ArrayList.
-	 * Example: if the ArrayList contains 3 other lists, each with 4 elements,
-	 * this method return 12.
-	 * 
-	 * @param List2D:
-	 *            List to get all elements from
-	 * 
-	 * @return int number of elements
-	 * 
-	 */
-	public static int getSize(ArrayList<ArrayList<String>> List2D) {
-		int toReturn = 0;
-		for (int i = 0; i < List2D.size(); i++) {
-			toReturn += List2D.get(i).size();
-		}
-		return toReturn;
-	}
+	// }
 
 }
