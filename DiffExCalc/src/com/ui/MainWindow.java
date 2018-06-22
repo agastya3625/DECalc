@@ -29,13 +29,13 @@ public class MainWindow {
 	private Color WHITE; // standard white color of text
 	private String[] cmds = new String[3]; // stores command line args for
 											// DiffExCalc.java
-	private String delimiterData;
-	private String delimiterMeta;
 	private ArrayList<ArrayList<String>> comps;
 	private ArrayList<ButtonList> CheckBoxes;
 	private Text data; // data file Text field
 	private Text meta; // metadata folder text field
 	private Text res; // results folder text field
+	private String datadelim;
+	private String metadelim;
 	// list of comparisons to perform
 	private Display display; // display of the app
 	private static Label statusLabel; // shows current run status
@@ -109,8 +109,29 @@ public class MainWindow {
 		label.setBounds(x, 5, p.x + 5, p.y + 5);
 		makeFileBrowsers(); // makes the interactive file browsers
 		setButtons(); // makes all the buttons needed for the first screen
+		setDelimiters();
 	}
 
+	private void setDelimiters(){
+		Label label = new Label(shell, SWT.CENTER);
+		label.setText("File delimiter");
+		label.setForeground(WHITE);
+		label.setBounds(825, 20, 100, Config.textHt);
+		Text t = new Text(shell, SWT.SINGLE);
+		t.setBounds(850, 40, 30, Config.textHt);
+		t.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				datadelim = t.getText();
+			}
+		});
+		Text meta = new Text(shell, SWT.SINGLE);
+		meta.setBounds(850, 80, 30, Config.textHt);
+		meta.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				metadelim = meta.getText();
+			}
+		});
+	}
 	/**
 	 * This method makes the file browsers that let the user browse their
 	 * computer for the data file, metadata folder, and results folder
@@ -421,11 +442,11 @@ public class MainWindow {
 				e.printStackTrace();
 			}
 		});
-		runButton.setBounds(Config.RIGHT_CORNER);
+		runButton.setBounds(Config.TOP_LEFT_CORNER_B);
 		backButton = new Button(shell, SWT.PUSH);
 		backButton.setText("<- Back");
 		backButton.addListener(SWT.Selection, event -> goBack());
-		backButton.setBounds(Config.TOP_LEFT_CORNER);
+		backButton.setBounds(Config.TOP_LEFT_CORNER_A);
 	}
 
 	/**
@@ -479,7 +500,7 @@ public class MainWindow {
 					@Override
 					public void run() {
 						try {
-							DiffExCalc.main(cmds, compars, progressBar, info, statusLabel, text, delimiterData, delimiterMeta);
+							DiffExCalc.main(cmds, compars, progressBar, info, statusLabel, text, datadelim, metadelim);
 							display.asyncExec(new Runnable() {
 								@Override
 								public void run() {

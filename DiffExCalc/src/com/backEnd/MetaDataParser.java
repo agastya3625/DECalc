@@ -57,23 +57,6 @@ public class MetaDataParser {
 		return paramsList;
 	}
 
-	// makes data files
-	private static String[] DataNameGenerator(File folder, String foldername) {
-		File[] toReturn = new File[folder.listFiles(Config.FileFilter).length];
-		int i = 0;
-		for (File f : folder.listFiles(Config.FileFilter)) {
-			String g = f.getName().replace("metadata_", "");
-			File j = new File(foldername + "/" + g);
-			toReturn[i] = j;
-			i++;
-		}
-		String[] ret = new String[toReturn.length];
-		for (int k = 0; k < ret.length; k++) {
-			ret[k] = toReturn[k].getAbsolutePath();
-		}
-		return ret;
-	}
-
 	/**
 	 * This method is currently unused. Before the comparisons were displayed to
 	 * the user, the user would have to provide a file that had the comparisons
@@ -88,6 +71,8 @@ public class MetaDataParser {
 	 * 
 	 * @throws IOException
 	 *             caused by FileInputStream
+	 *             
+	 * @deprecated 6/18/18
 	 * 
 	 */
 	public static ArrayList<ArrayList<String>> getComps(String tests) throws IOException {

@@ -18,7 +18,7 @@ public class DiffExCalc {
 	private static File dataMatrix, metafolder, outputDir;
 	private static StatusUpdate su;
 	private static ProgressBar prog;
-	private static FileParser fp = new FileParser();
+	// private static FileParser fp = new FileParser();
 	// private static ArrayList<GenesList> deMultiplexedMatrix;
 
 	/**
@@ -401,221 +401,236 @@ public class DiffExCalc {
 	// DEPRECATED METHODS BELOW //
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * This method returns a GenesList based on the biological trial name. It is
-	 * used in building the data matrices that are passed through the
-	 * DiffExcalc. The matrix is demultiplexed by converting each column into
-	 * its own GenesList. This method then looks for the GenesList associated
-	 * with a certain biological replicate to add to a new matrix.
-	 * 
-	 * @param deMultiplexedMatrix:
-	 *            the data matrix, stored as an ArrayList of GenesLists, one per
-	 *            column of the data matrix.
-	 * @param tag:
-	 *            ID for each genesList that the GenesList name will
-	 *            contain-used for parsing.
-	 * 
-	 * @return GenesList for the biological replicate in question.
-	 * 
-	 *         6/20/18 functionality replaced by R script
-	 * @deprecated
-	 */
-	private static GenesList fetchList(ArrayList<GenesList> deMultiplexedMatrix, String tag) {
-		for (GenesList f : deMultiplexedMatrix) {
-			if (f.getDerivedFile().contains(tag)) {
-				return f;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * This method calculates the differentiation index (a metric used to rank
-	 * prospective clones-currently an unused function, as the differentiation
-	 * index is no longer used.
-	 * 
-	 * @param folder:
-	 *            of files (easch file conatins the counts and genes for a
-	 *            single clone)
-	 * @param g:
-	 *            GenesList of genes to be used to calculate the differentiation
-	 *            index
-	 * 
-	 * @return ArrayList of differentiation indices (one per clone)
-	 * @throws IOException
-	 *             caused by FileInputStream
-	 * 
-	 * @deprecated
-	 */
-	public static ArrayList<Double> getDiffIdx(GenesList g, File folder) throws IOException {
-		FileParser biofile = new FileParser();
-		ArrayList<GenesList> List2D = new ArrayList<GenesList>();
-		ArrayList<Double> toReturn = new ArrayList<Double>();
-		for (File f : folder.listFiles(Config.FileFilter)) {
-			List2D.add(biofile.toList(f, "double"));
-		}
-
-		for (int i = 0; i < List2D.size(); i++) {
-			double temp = 0;
-			for (int j = 0; j < List2D.get(i).size(); j++) {
-				if (g.contains(List2D.get(i).get(j))) {
-					temp += List2D.get(i).get(j).getgenCount();
-				}
-			}
-			toReturn.add(temp);
-		}
-		return toReturn;
-	}
-
-	/**
-	 * This method gets all significant genes (genes having a fold change
-	 * greater than a specified threshold) from a results file created by
-	 * DESeq2. It returns the genes as a GenesList object. This method is
-	 * currently not used, as this functionality was implemented within the R
-	 * Script.
-	 * 
-	 * @param sigGenes:
-	 *            File to be parsed
-	 * @return GenesList of significant genes
-	 * @throws IOException
-	 *             caused by FileInputStream
-	 * 
-	 * @deprecated
-	 */
-	public static GenesList getSigGenes(File sigGenes) throws IOException {
-		FileInputStream fileIn = new FileInputStream(sigGenes);
-		Scanner in = new Scanner(fileIn);
-		GenesList toReturn = new GenesList();
-		while (in.hasNext()) {
-			toReturn.add(new Gene(in.nextLine()));
-		}
-		in.close();
-		return toReturn;
-	}
-
-	/**
-	 * This method checks the data file/folder and determines if it needs to be
-	 * demultiplexed. If the data file has every trial in the same order that
-	 * every metadata file does, then it is not demultiplexed and rearranged to
-	 * accommodate each individual metadata file. This is done to avoid passing
-	 * extraneous data to DESeq2, which optimizes its running time.
-	 * 
-	 * @throws IOException
-	 *             caused by MetaDataParser
-	 * 
-	 * @return true if pre-processing is necessary, false if not
-	 * 
-	 *         6/18/18 moved this function into R script because R can do it
-	 *         faster
-	 * @deprecated
-	 */
-	private static boolean preProcessingCheck() throws IOException {
-		boolean toReturn = false;
-		if (dataMatrix.isFile()) {
-			String fileTitle = fp.getTitle(dataMatrix).substring(fp.getTitle(dataMatrix).indexOf(",") + 1,
-					fp.getTitle(dataMatrix).length());
-			fileTitle = fileTitle.replace(" ", "");
-			if (metafolder.isDirectory()) {
-				// compares rows of metadata file with the header of the data
-				// matrix to check equality for each metadata file
-
-				for (File f : metafolder.listFiles(Config.FileFilter)) {
-					String metaTrials = MetaDataParser.parse(f).get(0).toString();
-					metaTrials = metaTrials.replace("[", "");
-					metaTrials = metaTrials.replace("]", "");
-					metaTrials = metaTrials.replace(" ", "");
-					if (!fileTitle.equals(metaTrials)) {
-						toReturn = true;
-					}
-				}
-			} else {
-				// does the same as the loop above, just for a single metadata
-				// file
-				String metaTrials = MetaDataParser.parse(metafolder).get(0).toString();
-				metaTrials = metaTrials.replace("[", "");
-				metaTrials = metaTrials.replace("]", "");
-				metaTrials = metaTrials.replace(" ", "");
-				if (!fileTitle.equals(metaTrials)) {
-					toReturn = true;
-				}
-
-			}
-		}
-		return toReturn;
-	}
-
-	/**
-	 * // * This method combines the data files (or data matrix) to the
-	 * combination // * of each metadata file. // * // * 6/18/18 moved this
-	 * function into R because it's faster // * // * @throws IOException // *
-	 * caused by MetaDataParser // * // * @deprecated // * //
-	 */
-
-	/**
-	 * This method makes the matrices required per metadata file. This way, even
-	 * though the data matrix has all trials, it is not all passed through the
-	 * DESeq2 program at once, thereby optimizing its run time.
-	 * 
-	 * @param matrixForm:
-	 *            String[] showing what clones need to be in the matrix and in
-	 *            what order
-	 * @param deMultiplexedMatrix:
-	 *            matrix represented by an ArrayList of GenesLists, each one
-	 *            representing a column in the matrix.
-	 * @param metafile:
-	 *            metadata file.
-	 * @param matrixFolder:
-	 *            folder to put the made matrices into.
-	 * 
-	 * @throws IOException
-	 *             caused by FileInputStream
-	 * 
-	 *             6/20/18 functionality replaced, can be found in R script
-	 * @deprecated
-	 */
-	private static void MatrixMaker(String[] matrixForm, ArrayList<GenesList> deMultiplexedMatrix, File metafile,
-			File matrixFolder) throws IOException {
-		FileParser fp = new FileParser();
-		// creates a list of GenesLists representing the matrix. This list is
-		// then converted into a data matrix.
-		ArrayList<GenesList> List2D = new ArrayList<GenesList>();
-		for (int i = 0; i < matrixForm.length; i++) {
-			List2D.add(fetchList(deMultiplexedMatrix, matrixForm[i]));
-		}
-		File datamat = new File(matrixFolder.getPath() + "/"
-				+ metafile.getName().substring(0, metafile.getName().indexOf(".csv") - 1) + "_DataMatrix.csv");
-		// System.out.println(datamat);
-		GenesList matrix = fp.condense2DList(List2D);
-		fp.tags = matrixForm;
-		fp.makeMatrix(matrix, datamat);
-		dataMatrix = datamat;
-	}
-	// private static void multiplexMatrices() throws IOException {
-	// stores all of the String[]s that have the matrix forms
-	// String[][] matrixForms;
-	// if (metafolder.isDirectory()) {
-	// matrixForms = new
-	// String[metafolder.listFiles(Config.FileFilter).length][];
-	// for (int i = 0; i < matrixForms.length; i++) {
-	// matrixForms[i] =
-	// MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).toArray(
-	// new
-	// String[MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).size()]);
+	// /**
+	// * This method returns a GenesList based on the biological trial name. It
+	// is
+	// * used in building the data matrices that are passed through the
+	// * DiffExcalc. The matrix is demultiplexed by converting each column into
+	// * its own GenesList. This method then looks for the GenesList associated
+	// * with a certain biological replicate to add to a new matrix.
+	// *
+	// * @param deMultiplexedMatrix:
+	// * the data matrix, stored as an ArrayList of GenesLists, one per
+	// * column of the data matrix.
+	// * @param tag:
+	// * ID for each genesList that the GenesList name will
+	// * contain-used for parsing.
+	// *
+	// * @return GenesList for the biological replicate in question.
+	// *
+	// * 6/20/18 functionality replaced by R script
+	// * @deprecated
+	// */
+	// private static GenesList fetchList(ArrayList<GenesList>
+	// deMultiplexedMatrix, String tag) {
+	// for (GenesList f : deMultiplexedMatrix) {
+	// if (f.getDerivedFile().contains(tag)) {
+	// return f;
 	// }
-	// for (int i = 0; i < matrixForms.length; i++) {
-	// MatrixMaker(matrixForms[i], deMultiplexedMatrix,
-	// metafolder.listFiles(Config.FileFilter)[i], null);
+	// }
+	// return null;
+	// }
+	//
+	// /**
+	// * This method calculates the differentiation index (a metric used to rank
+	// * prospective clones-currently an unused function, as the differentiation
+	// * index is no longer used.
+	// *
+	// * @param folder:
+	// * of files (easch file conatins the counts and genes for a
+	// * single clone)
+	// * @param g:
+	// * GenesList of genes to be used to calculate the differentiation
+	// * index
+	// *
+	// * @return ArrayList of differentiation indices (one per clone)
+	// * @throws IOException
+	// * caused by FileInputStream
+	// *
+	// * @deprecated
+	// */
+	// public static ArrayList<Double> getDiffIdx(GenesList g, File folder)
+	// throws IOException {
+	// FileParser biofile = new FileParser();
+	// ArrayList<GenesList> List2D = new ArrayList<GenesList>();
+	// ArrayList<Double> toReturn = new ArrayList<Double>();
+	// for (File f : folder.listFiles(Config.FileFilter)) {
+	// List2D.add(biofile.toList(f, "double"));
+	// }
+	//
+	// for (int i = 0; i < List2D.size(); i++) {
+	// double temp = 0;
+	// for (int j = 0; j < List2D.get(i).size(); j++) {
+	// if (g.contains(List2D.get(i).get(j))) {
+	// temp += List2D.get(i).get(j).getgenCount();
+	// }
+	// }
+	// toReturn.add(temp);
+	// }
+	// return toReturn;
+	// }
+	//
+	// /**
+	// * This method gets all significant genes (genes having a fold change
+	// * greater than a specified threshold) from a results file created by
+	// * DESeq2. It returns the genes as a GenesList object. This method is
+	// * currently not used, as this functionality was implemented within the R
+	// * Script.
+	// *
+	// * @param sigGenes:
+	// * File to be parsed
+	// * @return GenesList of significant genes
+	// * @throws IOException
+	// * caused by FileInputStream
+	// *
+	// * @deprecated
+	// */
+	// public static GenesList getSigGenes(File sigGenes) throws IOException {
+	// FileInputStream fileIn = new FileInputStream(sigGenes);
+	// Scanner in = new Scanner(fileIn);
+	// GenesList toReturn = new GenesList();
+	// while (in.hasNext()) {
+	// toReturn.add(new Gene(in.nextLine()));
+	// }
+	// in.close();
+	// return toReturn;
+	// }
+	//
+	// /**
+	// * This method checks the data file/folder and determines if it needs to
+	// be
+	// * demultiplexed. If the data file has every trial in the same order that
+	// * every metadata file does, then it is not demultiplexed and rearranged
+	// to
+	// * accommodate each individual metadata file. This is done to avoid
+	// passing
+	// * extraneous data to DESeq2, which optimizes its running time.
+	// *
+	// * @throws IOException
+	// * caused by MetaDataParser
+	// *
+	// * @return true if pre-processing is necessary, false if not
+	// *
+	// * 6/18/18 moved this function into R script because R can do it
+	// * faster
+	// * @deprecated
+	// */
+	// private static boolean preProcessingCheck() throws IOException {
+	// boolean toReturn = false;
+	// if (dataMatrix.isFile()) {
+	// String fileTitle =
+	// fp.getTitle(dataMatrix).substring(fp.getTitle(dataMatrix).indexOf(",") +
+	// 1,
+	// fp.getTitle(dataMatrix).length());
+	// fileTitle = fileTitle.replace(" ", "");
+	// if (metafolder.isDirectory()) {
+	// // compares rows of metadata file with the header of the data
+	// // matrix to check equality for each metadata file
+	//
+	// for (File f : metafolder.listFiles(Config.FileFilter)) {
+	// String metaTrials = MetaDataParser.parse(f).get(0).toString();
+	// metaTrials = metaTrials.replace("[", "");
+	// metaTrials = metaTrials.replace("]", "");
+	// metaTrials = metaTrials.replace(" ", "");
+	// if (!fileTitle.equals(metaTrials)) {
+	// toReturn = true;
+	// }
 	// }
 	// } else {
-	// matrixForms = new String[1][];
-	// matrixForms[0] = MetaDataParser.parse(metafolder).get(0)
-	// .toArray(new String[MetaDataParser.parse(metafolder).get(0).size()]);
-	// for (int i = 0; i < matrixForms.length; i++) {
-	// MatrixMaker(matrixForms[i], deMultiplexedMatrix, metafolder, null);
+	// // does the same as the loop above, just for a single metadata
+	// // file
+	// String metaTrials = MetaDataParser.parse(metafolder).get(0).toString();
+	// metaTrials = metaTrials.replace("[", "");
+	// metaTrials = metaTrials.replace("]", "");
+	// metaTrials = metaTrials.replace(" ", "");
+	// if (!fileTitle.equals(metaTrials)) {
+	// toReturn = true;
+	// }
+	//
 	// }
 	// }
-	// makes each matrix
-
+	// return toReturn;
 	// }
-
+	//
+	// /**
+	// * // * This method combines the data files (or data matrix) to the
+	// * combination // * of each metadata file. // * // * 6/18/18 moved this
+	// * function into R because it's faster // * // * @throws IOException // *
+	// * caused by MetaDataParser // * // * @deprecated // * //
+	// */
+	//
+	// /**
+	// * This method makes the matrices required per metadata file. This way,
+	// even
+	// * though the data matrix has all trials, it is not all passed through the
+	// * DESeq2 program at once, thereby optimizing its run time.
+	// *
+	// * @param matrixForm:
+	// * String[] showing what clones need to be in the matrix and in
+	// * what order
+	// * @param deMultiplexedMatrix:
+	// * matrix represented by an ArrayList of GenesLists, each one
+	// * representing a column in the matrix.
+	// * @param metafile:
+	// * metadata file.
+	// * @param matrixFolder:
+	// * folder to put the made matrices into.
+	// *
+	// * @throws IOException
+	// * caused by FileInputStream
+	// *
+	// * 6/20/18 functionality replaced, can be found in R script
+	// * @deprecated
+	// */
+	// private static void MatrixMaker(String[] matrixForm, ArrayList<GenesList>
+	// deMultiplexedMatrix, File metafile,
+	// File matrixFolder) throws IOException {
+	// FileParser fp = new FileParser();
+	// // creates a list of GenesLists representing the matrix. This list is
+	// // then converted into a data matrix.
+	// ArrayList<GenesList> List2D = new ArrayList<GenesList>();
+	// for (int i = 0; i < matrixForm.length; i++) {
+	// List2D.add(fetchList(deMultiplexedMatrix, matrixForm[i]));
+	// }
+	// File datamat = new File(matrixFolder.getPath() + "/"
+	// + metafile.getName().substring(0, metafile.getName().indexOf(".csv") - 1)
+	// + "_DataMatrix.csv");
+	// // System.out.println(datamat);
+	// GenesList matrix = fp.condense2DList(List2D);
+	// fp.tags = matrixForm;
+	// fp.makeMatrix(matrix, datamat);
+	// dataMatrix = datamat;
+	// }
+	// // private static void multiplexMatrices() throws IOException {
+	// // stores all of the String[]s that have the matrix forms
+	// // String[][] matrixForms;
+	// // if (metafolder.isDirectory()) {
+	// // matrixForms = new
+	// // String[metafolder.listFiles(Config.FileFilter).length][];
+	// // for (int i = 0; i < matrixForms.length; i++) {
+	// // matrixForms[i] =
+	// //
+	// MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).toArray(
+	// // new
+	// //
+	// String[MetaDataParser.parse(metafolder.listFiles(Config.FileFilter)[i]).get(0).size()]);
+	// // }
+	// // for (int i = 0; i < matrixForms.length; i++) {
+	// // MatrixMaker(matrixForms[i], deMultiplexedMatrix,
+	// // metafolder.listFiles(Config.FileFilter)[i], null);
+	// // }
+	// // } else {
+	// // matrixForms = new String[1][];
+	// // matrixForms[0] = MetaDataParser.parse(metafolder).get(0)
+	// // .toArray(new String[MetaDataParser.parse(metafolder).get(0).size()]);
+	// // for (int i = 0; i < matrixForms.length; i++) {
+	// // MatrixMaker(matrixForms[i], deMultiplexedMatrix, metafolder, null);
+	// // }
+	// // }
+	// // makes each matrix
+	//
+	// // }
+	public static int Zero(){
+		return 0;
+	}
 }

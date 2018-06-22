@@ -198,7 +198,13 @@ public class Config {
 	/**
 	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
 	 */
-	public static Rectangle TOP_LEFT_CORNER = new Rectangle(25, 25, Config.BUTTON_WIDTH, Config.textHt);
+	public static Rectangle TOP_LEFT_CORNER_A = new Rectangle(25, 25, Config.BUTTON_WIDTH/2, Config.textHt);
+	
+	/**
+	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
+	 */
+	public static Rectangle TOP_LEFT_CORNER_B = new Rectangle(125, 25, 2 * Config.BUTTON_WIDTH/3, Config.textHt);
+
 
 	/**
 	 * progress bar to monitor the run progress 
@@ -299,7 +305,6 @@ public class Config {
 			toReturn += List2D.get(i).size();
 		}
 		return toReturn;
-	}
-	
+	}	
 	
 }
