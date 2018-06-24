@@ -630,7 +630,4 @@ public class DiffExCalc {
 	// // makes each matrix
 	//
 	// // }
-	public static int Zero(){
-		return 0;
-	}
 }
