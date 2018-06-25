@@ -102,21 +102,21 @@ for (i in d) {
     # airSE <- as(dds, "RangedSummarizedExperiment")
     # dim(airSE)
     # assay(airSE)[1:4,1:4]
-    
+
     ## ----pdataAirway-----------------------------------------------------------
     # airSE$GROUP <- ifelse(airSE$dex == "trt", 1, 0)
     # table(airSE$GROUP)
-    
+
     ## ----pdataAirway2----------------------------------------------------------
     # airSE$BLOCK <- airway$cell
     # table(airSE$BLOCK)
-    
+
     ## ----deAirway--------------------------------------------------------------
     # library(EnrichmentBrowser)
     # #test <- data.matrix(airSE, rownames.force = rownames(AirSE))
     # airSE <- deAna(airSE, de.method="DESeq")
     # rowData(airSE, use.names=TRUE)
-    
+
     ## ----pwys------------------------------------------------------------------
     # library(graphite)
     # pwys <- pathways(species="hsapiens", database="kegg")
@@ -160,7 +160,7 @@ for (i in d) {
     # 
     # ## ----mapIDs----------------------------------------------------------------
     # all <- idMap(res21IF_21UF_Sig, org="hsa", from="ALIAS", to="ENTREZID")
-    
+
     ## ----genes-----------------------------------------------------------------
     # all <- rownames(res21IF_21UF_Sig)
     # all <- mget(x=rownames(res21IF_21UF_Sig),envir=org.Hs.egALIAS2EG)
@@ -317,18 +317,18 @@ for (i in d) {
     #   gs=hsa.gs[["hsa05217_Basal_cell_carcinoma"]], 
     #   grn=hsa.grn, se=allSE)
     # ggeaGraphLegend()
-    
+
     
     
     
     
     
     message(paste("Comparison ", i, ": passed", sep = ""))
-  }, warning = function(war) {
+    }, warning = function(war) {
     message(paste("Comparison ", i, ": failed", sep = ""))
     message(war)
-  }, error = function(err) {
+    }, error = function(err) {
     message(paste("Comparison ", i, ": failed", sep = ""))
     message(err)
-  })
+    })
 }

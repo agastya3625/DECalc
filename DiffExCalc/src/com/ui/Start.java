@@ -39,7 +39,7 @@ public class Start {
 		// default heights and widths. thee are changed if the screen display is
 		// smaller than these dimensions.
 		int newHeight = 790;
-		int newWidth = 1366;
+		int newWidth = 800;
 		if (display.getMonitors()[0].getBounds().height < 790) {
 			newHeight = display.getMonitors()[0].getBounds().height;
 		} else {
@@ -48,7 +48,7 @@ public class Start {
 		if (display.getMonitors()[0].getBounds().width < 1366) {
 			newWidth = display.getMonitors()[0].getBounds().height;
 		} else {
-			newWidth = 1366;
+			newWidth = 800;
 		}
 		Config.ResizeAll(newWidth, newHeight);
 		// run java and OS checks
@@ -62,12 +62,12 @@ public class Start {
 			}
 			display.dispose();
 		} catch (IllegalArgumentException e) {
-			Shell s = new Shell(display, Config.SHELL_STYLE);
+			Shell s = new Shell(display );
 			MessageBox dia = new MessageBox(s, SWT.ERROR);
 			dia.setMessage(e.getMessage());
 			dia.open();
 		} catch (VersionException e) {
-			Shell s = new Shell(display, Config.SHELL_STYLE);
+			Shell s = new Shell(display);
 			s.setSize(400, 400);
 			s.setImage(new Image(display, Config.ICON));
 			s.open();
@@ -94,7 +94,7 @@ public class Start {
 			}
 		} catch (Exception e) {
 			if (!(e instanceof NullPointerException)) {
-				Shell s = new Shell(display, Config.SHELL_STYLE);
+				Shell s = new Shell(display);
 				s.setSize(400, 400);
 				s.setImage(new Image(display, Config.ICON));
 				s.open();
@@ -126,7 +126,7 @@ public class Start {
 	}
 
 	private static void ShowAboutMessage() {
-		Shell message = new Shell(display, Config.SHELL_STYLE);
+		Shell message = new Shell(display);
 		message.setText("About DECalc");
 		message.setImage(new Image(display, Config.ICON));
 		message.setSize(600, 500);
@@ -301,7 +301,7 @@ public class Start {
 		Config.MANUAL = fileStreamsBinary(Config.MANUAL);
 		out.println("Config.MANUAL:" + Config.MANUAL);
 		Config.VERS = fileStreams(Config.VERS);
-		out.println("Config.VERSe:" + Config.VERS);
+		out.println("Config.VERS:" + Config.VERS);
 		Config.SAMPLE_DATA_FILE = fileStreams(Config.SAMPLE_DATA_FILE);
 		out.println("Config.SAMPLE_DATA_FILE:" + Config.SAMPLE_DATA_FILE);
 		Config.SAMPLE_METADATA_FILE = fileStreams(Config.SAMPLE_METADATA_FILE);

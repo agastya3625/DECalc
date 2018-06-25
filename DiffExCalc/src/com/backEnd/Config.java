@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 
 /**
  * This class holds all of the constants that are used throughout the program.
@@ -115,11 +116,6 @@ public class Config {
 	// Graphics constants
 
 	/**
-	 * SWT style requirements of the shell
-	 */
-	public static final int SHELL_STYLE = SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.H_SCROLL | SWT.V_SCROLL ;
-
-	/**
 	 * Style of information MessageBoxes in app
 	 */
 	public static int INFO_STYLE = SWT.ICON_INFORMATION | SWT.OK;
@@ -198,18 +194,18 @@ public class Config {
 	/**
 	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
 	 */
-	public static Rectangle TOP_LEFT_CORNER_A = new Rectangle(25, 25, Config.BUTTON_WIDTH/2, Config.textHt);
+	public static Rectangle TOP_LEFT_CORNER_A = new Rectangle(225, 10, Config.BUTTON_WIDTH/2 + 5, Config.textHt);
 	
 	/**
 	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
 	 */
-	public static Rectangle TOP_LEFT_CORNER_B = new Rectangle(125, 25, 2 * Config.BUTTON_WIDTH/3, Config.textHt);
+	public static Rectangle TOP_LEFT_CORNER_B = new Rectangle(325, 10, 2 * Config.BUTTON_WIDTH/3 + 5, Config.textHt);
 
 
 	/**
 	 * progress bar to monitor the run progress 
 	 */
-	public static Rectangle PROGRESS_BAR = new Rectangle(Config.SHELL_WIDTH - 568, 30, 500, 20);
+	public static Rectangle PROGRESS_BAR = new Rectangle(Config.SHELL_WIDTH - 320, 30, 300, 20);
 	
 	/**
 	 * shows the current task being executed
@@ -226,6 +222,9 @@ public class Config {
 	 * user preferences file 
 	 */
 	public static String prefs = "prefs.txt";
+	
+	
+	public static GridData GRID_DATA_FILL= new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 
 	
 	
