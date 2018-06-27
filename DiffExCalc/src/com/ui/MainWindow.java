@@ -29,8 +29,9 @@ public class MainWindow {
 	private Color WHITE; // standard white color of text
 	private String[] cmds = new String[3]; // stores command line args for
 											// DiffExCalc.java
-	private ArrayList<ArrayList<String>> comps; // list of comparisons to perform
-	private ArrayList<ButtonList> CheckBoxes; 	
+	private ArrayList<ArrayList<String>> comps; // list of comparisons to
+												// perform
+	private ArrayList<ButtonList> CheckBoxes;
 	private Text data; // data file Text field
 	private Text meta; // metadata folder text field
 	private Text res; // results folder text field
@@ -63,7 +64,7 @@ public class MainWindow {
 	 *            display that the shell should be created within
 	 */
 	private void makeParentShell(Display display) {
-		shell = new Shell(display/*, Config.SHELL_STYLE*/);
+		shell = new Shell(display/* , Config.SHELL_STYLE */);
 		shell.setLayout(new GridLayout(7, false));
 		makeUI();// makes the rest of the UI
 		// makes the and sets the background image of the main window
@@ -74,9 +75,9 @@ public class MainWindow {
 		int x = bounds.x + (bounds.width - rect.width) / 2;
 		int y = bounds.y + (bounds.height - rect.height) / 2;
 		shell.setLocation(x, y);
-		//shell.setSize(Config.SHELL_HEIGHT, Config.SHELL_WIDTH);
 		shell.pack();
 		shell.open();
+		shell.setSize(800, 300);
 		shell.setImage(new Image(display, Config.ICON));
 		shell.setBackgroundMode(SWT.INHERIT_DEFAULT);
 		while (!shell.isDisposed()) {
@@ -93,108 +94,94 @@ public class MainWindow {
 	 */
 	private void makeUI() {
 		makeMenu();
-		///MAKE FILE BROWSERS, DELIMITERS, AND BUTTONS
+		/// MAKE FILE BROWSERS, DELIMITERS, AND BUTTONS
 		// listeners for the browse buttons
-				ModifyListener datalistener = new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						setChangedData((Text) e.widget, Config.DATA_POS);
-					}
-				};
+		ModifyListener datalistener = new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setChangedData((Text) e.widget, Config.DATA_POS);
+			}
+		};
 
-				ModifyListener metalistener = new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						setChangedData((Text) e.widget, Config.METADATA_POS);
-					}
-				};
-				ModifyListener reslistener = new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						setChangedData((Text) e.widget, Config.RESULTS_POS);
-					}
-				};
-				
-				//DATA ROW
-				Label label = new Label(shell, SWT.NULL);
-				label.setText("Data File/Folder: ");
-				label.setForeground(WHITE);
-				//label.setBounds(40, 40, 125, Config.textHt);
-				data = new Text(shell, SWT.SINGLE);
-				data.setBounds(190, 40, Config.textWt, Config.textHt);
-				data.addModifyListener(datalistener);
-				GridData gridData1 = new GridData(GridData.FILL_HORIZONTAL);
-			    gridData1.widthHint = Config.textWt;
-			    gridData1.heightHint = Config.textHt;
-			    data.setLayoutData(gridData1);
-				FileBrowsers fbb = new FileBrowsers(data);
-				Button dataFile = fbb.FileBrowseButton(shell);
-				dataFile.setLayoutData(Config.GRID_DATA_FILL);
-				Button dataFolder = fbb.diags(shell);
-				dataFolder.setLayoutData(Config.GRID_DATA_FILL);
-				Label label2 = new Label(shell, SWT.CENTER);
-				label2.setText("File delimiter:");
-				label2.setForeground(WHITE);
-				Text t = new Text(shell, SWT.SINGLE);
-				t.setBounds(850, 40, 30, Config.textHt);
-				t.addModifyListener(new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						datadelim = t.getText();
-					}
-				});
-				HelpButton dataHelp = new HelpButton(Config.dataHelpMessage, Config.dataHelpHeader);
-				Button hdata = dataHelp.Help(shell);
-				hdata.setBounds(785, 40, 40, Config.textHt);				
-				
-				//METADATA ROW
-				label = new Label(shell, SWT.CENTER);
-				label.setForeground(WHITE);
-				label.setText("Metadata File/Folder:");
-				label.setBounds(40, 80, 125, Config.textHt);
-				meta = new Text(shell, SWT.SINGLE);
-				meta.setBounds(190, 80, Config.textWt, Config.textHt);
-				meta.addModifyListener(metalistener);
-				meta.setLayoutData(gridData1);
-				//meta.setLayoutData(gridData2);
-				FileBrowsers fbb2 = new FileBrowsers(meta);
-				Button metaFile = fbb2.FileBrowseButton(shell);
-				metaFile.setLayoutData(Config.GRID_DATA_FILL);
-				Button metaFolder = fbb2.diags(shell);
-				metaFolder.setLayoutData(Config.GRID_DATA_FILL);
-				Label label3 = new Label(shell, SWT.CENTER);
-				label3.setText("File delimiter:");
-				label3.setForeground(WHITE);
-				Text meta3 = new Text(shell, SWT.SINGLE);
-				meta3.setBounds(850, 80, 30, Config.textHt);
-				meta3.addModifyListener(new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						metadelim = meta3.getText();
-					}
-				});
-				HelpButton metaH = new HelpButton(Config.metadataHelpMessage, Config.metadataHelpHeader);
-				Button hmeta = metaH.Help(shell);
-				hmeta.setBounds(785, 80, 40, Config.textHt);
-				
-				//RESULTS ROW
-				label = new Label(shell, SWT.CENTER);
-				label.setForeground(WHITE);
-				label.setText("Results Folder: ");
-				label.setBounds(40, 120, 125, Config.textHt);
-				res = new Text(shell, SWT.SINGLE);
-				res.setBounds(190, 120, Config.textWt, Config.textHt);
-				res.addModifyListener(reslistener);
-				res.setLayoutData(gridData1);
-				FileBrowsers fbb4 = new FileBrowsers(res);
-				Button resBrowse = fbb4.diags(shell);
-				resBrowse.setLayoutData(Config.GRID_DATA_FILL);
-				HelpButton res = new HelpButton(Config.resultsHelpMessage, Config.resultsHelpHeader);
-				Button hres = res.Help(shell);
-				hres.setBounds(540, 120, 40, Config.textHt);
-				
-				//NEXT BUTTON
-				Button msgBtn = new Button(shell, SWT.PUSH);
-				msgBtn.setText("Next ->");
-				msgBtn.addListener(SWT.Selection, event -> findComps());
-			    GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_END);
-			    gridData.horizontalSpan = 7;
-				msgBtn.setLayoutData(gridData);
+		ModifyListener metalistener = new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setChangedData((Text) e.widget, Config.METADATA_POS);
+			}
+		};
+		ModifyListener reslistener = new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setChangedData((Text) e.widget, Config.RESULTS_POS);
+			}
+		};
+
+		// DATA ROW
+		Label label = new Label(shell, SWT.NULL);
+		label.setText("Data File/Folder: ");
+		label.setForeground(WHITE);
+		data = new Text(shell, SWT.SINGLE);
+		data.addModifyListener(datalistener);
+		GridData gridData1 = new GridData(GridData.FILL_HORIZONTAL);
+		gridData1.widthHint = Config.textWt;
+		gridData1.heightHint = Config.textHt;
+		data.setLayoutData(gridData1);
+		FileBrowsers fbb = new FileBrowsers(data);
+		Button dataFile = fbb.FileBrowseButton(shell);
+		dataFile.setLayoutData(Config.GRID_DATA_FILL);
+		Button dataFolder = fbb.diags(shell);
+		dataFolder.setLayoutData(Config.GRID_DATA_FILL);
+		Label label2 = new Label(shell, SWT.CENTER);
+		label2.setText("File delimiter:");
+		label2.setForeground(WHITE);
+		Text t = new Text(shell, SWT.SINGLE);
+		t.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				datadelim = t.getText();
+			}
+		});
+		new HelpButton(Config.dataHelpMessage, Config.dataHelpHeader).Help(shell);
+
+		// METADATA ROW
+		label = new Label(shell, SWT.CENTER);
+		label.setForeground(WHITE);
+		label.setText("Metadata File/Folder:");
+		meta = new Text(shell, SWT.SINGLE);
+		meta.addModifyListener(metalistener);
+		meta.setLayoutData(gridData1);
+		FileBrowsers fbb2 = new FileBrowsers(meta);
+		Button metaFile = fbb2.FileBrowseButton(shell);
+		metaFile.setLayoutData(Config.GRID_DATA_FILL);
+		Button metaFolder = fbb2.diags(shell);
+		metaFolder.setLayoutData(Config.GRID_DATA_FILL);
+		Label label3 = new Label(shell, SWT.CENTER);
+		label3.setText("File delimiter:");
+		label3.setForeground(WHITE);
+		Text meta3 = new Text(shell, SWT.SINGLE);
+		meta3.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				metadelim = meta3.getText();
+			}
+		});
+		new HelpButton(Config.metadataHelpMessage, Config.metadataHelpHeader).Help(shell);
+
+		// RESULTS ROW
+		label = new Label(shell, SWT.CENTER);
+		label.setForeground(WHITE);
+		label.setText("Results Folder: ");
+		res = new Text(shell, SWT.SINGLE);
+		res.addModifyListener(reslistener);
+		res.setLayoutData(gridData1);
+		FileBrowsers fbb4 = new FileBrowsers(res);
+		Button resBrowse = fbb4.diags(shell);
+		resBrowse.setLayoutData(Config.GRID_DATA_FILL);
+		new HelpButton(Config.resultsHelpMessage, Config.resultsHelpHeader).Help(shell);
+		;
+
+		// NEXT BUTTON
+		Button msgBtn = new Button(shell, SWT.PUSH);
+		msgBtn.setText("Next ->");
+		msgBtn.addListener(SWT.Selection, event -> findComps());
+		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_END);
+		gridData.horizontalSpan = 7;
+		msgBtn.setLayoutData(gridData);
 	}
 
 	/**
@@ -298,7 +285,6 @@ public class MainWindow {
 		label.setText("Select Comparisons to run: ");
 		label.setForeground(WHITE);
 		label.setFont(new Font(label.getDisplay(), new FontData("Arial", 16, SWT.BOLD)));
-		label.setBounds(25, 25, 225, Config.textHt);
 		GridData g = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
 		g.horizontalSpan = 2;
 		label.setLayoutData(g);
@@ -327,13 +313,13 @@ public class MainWindow {
 		runButton.addListener(SWT.Selection, event -> {
 			try {
 				label.dispose();
-				runDESeq2(firstContent);
+				runDESeq2(first);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		});
 		runButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-		
+
 		// checkboxes are shown in columns with 30 comparisons in each check
 		// box.
 		for (int i = 0; i < comps.size(); i++) {
@@ -367,8 +353,7 @@ public class MainWindow {
 		firstScroll.setContent(firstContent);
 		firstScroll.setExpandHorizontal(true);
 		firstScroll.setExpandVertical(true);
-		firstScroll.setMinSize(
-				new Point(Config.SHELL_WIDTH, CheckBoxes.size() * Config.textHt * 2 + 5000));
+		firstScroll.setMinSize(new Point(Config.SHELL_WIDTH, CheckBoxes.size() * Config.textHt * 2 + 5000));
 		shell.pack();
 
 	}
@@ -378,14 +363,18 @@ public class MainWindow {
 	 * displays necessary information, checks if comparisons have been selected,
 	 * then passes the args to DiffExCalc, and displays the results file within
 	 * a text box in the UI to the user upon completion.
-	 * @param firstContent 
+	 * 
+	 * @param firstContent
 	 * 
 	 * @throws IOException
 	 *             if the file cannot be found/written to. Rarely throws
 	 *             exception, as the file is auto-generated and is not dependent
 	 *             on user input whatsoever.
 	 */
-	private void runDESeq2(Composite firstContent) throws IOException {
+	private void runDESeq2(Group firstContent) throws IOException {
+//		for(Control s: firstContent.getChildren()){
+//			s.dispose();
+//		}
 		try {
 			if (Config.OS_TYPE.toLowerCase().contains("win")) {
 				statusLabel.setForeground(WHITE);
@@ -406,38 +395,42 @@ public class MainWindow {
 				dia.open();
 				findComps();
 			} else {
+				Thread thread;
+				GridData firstData = new GridData(SWT.FILL, SWT.FILL, true, false);
+				firstData.horizontalSpan = 2;
 				firstContent.setBackground(WHITE);
 				Label l = new Label(firstContent, SWT.NONE);
-				l.setForeground(WHITE);
+				//l.setForeground(WHITE);
 				l.setText("Run Progress");
 				l.setFont(new Font(l.getDisplay(), new FontData("Arial", 16, SWT.BOLD)));
-//				l.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+				l.setLayoutData(firstData);
 				progressBar = new ProgressBar(firstContent, SWT.HORIZONTAL);
-				progressBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+				progressBar.setLayoutData(firstData);
 				statusLabel = new Label(firstContent, SWT.NONE);
-				//statusLabel.setLayoutData(first);
+				statusLabel.setLayoutData(firstData);
 				//statusLabel.setForeground(WHITE);
 				Text text = new Text(firstContent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
 				GridData secondData = new GridData(SWT.FILL, SWT.FILL, false, false);
 				secondData.widthHint = 400;
 				secondData.heightHint = 500;
 				text.setLayoutData(secondData);
-				dia.setMessage("Run Started. Run information is stored in:\n" + info.getPath()
-						+ ". \n\nProjected run time: " + ((Config.getSize(compars)) + 4) + " minutes.");
-				dia.open();
-				shell.pack();
 				Button startNew = new Button(shell, SWT.PUSH);
-				startNew.setBounds(Config.RIGHT_CORNER);
 				startNew.setText("New Run");
 				startNew.addListener(SWT.Selection, event -> startNew());
 				startNew.setEnabled(false);
-				for(ButtonList b: CheckBoxes){
+				for (ButtonList b : CheckBoxes) {
 					b.getFileButton().dispose();
-					for(Button button : b){
+					for (Button button : b) {
 						button.dispose();
 					}
 				}
-				Thread thread = new Thread(new Runnable() {
+
+				shell.pack();
+				dia.setMessage("Run Started. Run information is stored in:\n" + info.getPath()
+						+ ". \n\nProjected run time: " + ((Config.getSize(compars)) + 4) + " minutes.");
+				dia.open();
+
+				thread = new Thread(new Runnable() {
 					@Override
 					public void run() {
 						try {
@@ -463,17 +456,15 @@ public class MainWindow {
 				thread.start();
 				Button stop = new Button(shell, SWT.PUSH);
 				stop.setText("Stop Run");
-				stop.setBounds(Config.RIGHT_CORNER.x - Config.RIGHT_CORNER.width - 25, Config.RIGHT_CORNER.y,
-						Config.RIGHT_CORNER.width, Config.RIGHT_CORNER.height);
 				stop.addListener(SWT.Selection, new Listener() {
 					public void handleEvent(Event e) {
 						thread.interrupt();
 						disposeChildren(shell);
-						findComps();
+						makeUI();
 						System.out.println("Thread stopped.");
-						// info.delete();
 					}
 				});
+				shell.pack();
 			}
 		} catch (FileFormatException e) {
 			display.beep();
@@ -632,16 +623,12 @@ public class MainWindow {
 		s.setText("Upload New R file");
 		Label l = new Label(s, SWT.SINGLE);
 		l.setText("Select a new R file to use: ");
-		l.setBounds(10, 10, Config.BUTTON_WIDTH, 20);
 		Text getFile = new Text(s, SWT.SINGLE);
-		getFile.setBounds(10, 40, Config.textWt, Config.textHt);
 		FileBrowsers fbb = new FileBrowsers(getFile);
-		Button dataFile = fbb.FileBrowseButton(s);
-		dataFile.setBounds(275, 40, Config.BUTTON_WIDTH, Config.textHt);
+		fbb.FileBrowseButton(s);
 		s.open();
 		Button OK = new Button(s, SWT.PUSH);
 		OK.setText("Done");
-		OK.setBounds(325, 80, 100, 20);
 		OK.addListener(SWT.Selection, event -> s.dispose());
 		ModifyListener Rlistener = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -651,7 +638,6 @@ public class MainWindow {
 		getFile.addModifyListener(Rlistener);
 		Button restore = new Button(s, SWT.PUSH);
 		restore.setText("Restore Default File");
-		restore.setBounds(10, 80, Config.BUTTON_WIDTH, 20);
 		restore.addListener(SWT.Selection, event -> Config.RFile_Name = "./DESEQ_CORVERA.R");
 	}
 
@@ -735,5 +721,5 @@ public class MainWindow {
 		}
 		return toReturn;
 	}
-	
+
 }

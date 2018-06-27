@@ -51,6 +51,12 @@ public class DiffExCalc {
 			runInfo.delete();
 			runInfo = new File(absPath);
 		}
+		if(delimiterData.equals("tab")){
+			delimiterData = "\t";
+		}
+		if(delimiterMeta.equals("tab")){
+			delimiterMeta = "\t";
+		}
 		long startTime = System.currentTimeMillis();
 		// used to display the time taken to run.
 		try {
