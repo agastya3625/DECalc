@@ -411,8 +411,8 @@ public class MainWindow {
 				//statusLabel.setForeground(WHITE);
 				Text text = new Text(firstContent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
 				GridData secondData = new GridData(SWT.FILL, SWT.FILL, false, false);
-				secondData.widthHint = 400;
-				secondData.heightHint = 500;
+//				secondData.widthHint = 400;
+//				secondData.heightHint = 100;
 				text.setLayoutData(secondData);
 				Button startNew = new Button(shell, SWT.PUSH);
 				startNew.setText("New Run");
