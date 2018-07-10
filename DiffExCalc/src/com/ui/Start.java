@@ -38,12 +38,12 @@ public class Start {
 		display = Display.getDefault();
 		// default heights and widths. thee are changed if the screen display is
 		// smaller than these dimensions.
-		int newHeight = 790;
+		int newHeight = 350;
 		int newWidth = 800;
 		if (display.getMonitors()[0].getBounds().height < 790) {
 			newHeight = display.getMonitors()[0].getBounds().height;
 		} else {
-			newHeight = 790;
+			newHeight = 350;
 		}
 		if (display.getMonitors()[0].getBounds().width < 1366) {
 			newWidth = display.getMonitors()[0].getBounds().height;
@@ -62,7 +62,7 @@ public class Start {
 			}
 			display.dispose();
 		} catch (IllegalArgumentException e) {
-			Shell s = new Shell(display );
+			Shell s = new Shell(display);
 			MessageBox dia = new MessageBox(s, SWT.ERROR);
 			dia.setMessage(e.getMessage());
 			dia.open();
@@ -118,6 +118,7 @@ public class Start {
 					if (!display.readAndDispatch()) {
 						display.sleep();
 					}
+					e.printStackTrace();
 				}
 			} else {
 				e.printStackTrace();
@@ -142,7 +143,6 @@ public class Start {
 				try {
 					java.awt.Desktop.getDesktop().browse(java.net.URI.create(arg0.text));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -212,7 +212,7 @@ public class Start {
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		String exceptionAsString = sw.toString();
-		su = new StatusUpdate(null, null, t);
+		su = new StatusUpdate(null, t);
 		su.appendStatusLabel(exceptionAsString);
 	}
 
@@ -306,6 +306,8 @@ public class Start {
 		out.println("Config.SAMPLE_DATA_FILE:" + Config.SAMPLE_DATA_FILE);
 		Config.SAMPLE_METADATA_FILE = fileStreams(Config.SAMPLE_METADATA_FILE);
 		out.println("Config.SAMPLE_METADATA_FILE:" + Config.SAMPLE_METADATA_FILE);
+		Config.PLOTTER_NAME = fileStreams(Config.PLOTTER_NAME);
+		out.println("Config.PLOTTER_NAME:" + Config.PLOTTER_NAME);
 		out.close();
 	}
 
@@ -425,6 +427,7 @@ public class Start {
 			Config.VERS = s.nextLine().split(":")[1];
 			Config.SAMPLE_DATA_FILE = s.nextLine().split(":")[1];
 			Config.SAMPLE_METADATA_FILE = s.nextLine().split(":")[1];
+			Config.PLOTTER_NAME = s.nextLine().split(":")[1];
 			s.close();
 		} catch (IOException e) {
 			e.printStackTrace();

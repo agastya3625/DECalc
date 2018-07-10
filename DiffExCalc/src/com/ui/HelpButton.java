@@ -43,7 +43,7 @@ public class HelpButton {
 	 * 
 	 * @return styled Help button
 	 */
-	public Button Help(Shell s) {
+	public Button Help(Composite s) {
 		return start(s);
 	}
 
@@ -54,7 +54,7 @@ public class HelpButton {
 	 *            parent shell of the button
 	 * 
 	 */
-	private Button start(Shell s) {
+	private Button start(Composite s) {
 		Button button = new Button(s, SWT.PUSH);
 		button.setText("?");
 		button.addListener(SWT.Selection, event -> showHelp(message, s, title));
@@ -64,16 +64,19 @@ public class HelpButton {
 	/**
 	 * shows the help dialog box when the button is clicked
 	 * 
-	 * @param message: message to display
+	 * @param message:
+	 *            message to display
 	 * 
-	 * @param shell: parent shell of the help button
+	 * @param shell:
+	 *            parent shell of the help button
 	 * 
-	 * @param title: title of the message box
+	 * @param title:
+	 *            title of the message box
 	 * 
 	 */
-	private void showHelp(String message, Shell shell, String title) {
+	private void showHelp(String message, Composite shell, String title) {
 		int style = SWT.ICON_INFORMATION | SWT.OK;
-		MessageBox dia = new MessageBox(shell, style);
+		MessageBox dia = new MessageBox(shell.getShell(), style);
 		dia.setText(title);
 		dia.setMessage(message);
 		dia.open();

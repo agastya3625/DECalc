@@ -18,8 +18,8 @@ public class FileBrowsers {
 	/**
 	 * Constructor that takes in the text box to display files in
 	 * 
-	 * @param t: Text
-	 *            area to display content in
+	 * @param t:
+	 *            Text area to display content in
 	 */
 	public FileBrowsers(Text t) {
 		text = t;
@@ -35,12 +35,13 @@ public class FileBrowsers {
 	 * 
 	 * @return Button that opens a file browser
 	 */
-	public Button FileBrowseButton(Shell s) {
+	public Button FileBrowseButton(Composite s) {
 		Button button = new Button(s, SWT.PUSH);
 		button.setText("Browse Files");
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog dialog = new FileDialog(s, SWT.NULL);
+				FileDialog dialog = new FileDialog(s.getShell(), SWT.NULL);
+				dialog.setFilterExtensions(new String[] { "*.csv", "*.tsv", "*.txt" });
 				String path = dialog.open();
 				if (path != null) {
 					File file = new File(path);
@@ -80,7 +81,7 @@ public class FileBrowsers {
 	 * 
 	 * @return Button that opens a directory browser
 	 */
-	public Button diags(Shell shell) {
+	public Button diags(Composite shell) {
 
 		// Clicking the button will allow the user
 		// to select a directory
@@ -88,7 +89,7 @@ public class FileBrowsers {
 		button.setText("Browse Folders");
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				DirectoryDialog dlg = new DirectoryDialog(shell);
+				DirectoryDialog dlg = new DirectoryDialog(shell.getShell());
 				String path = dlg.open();
 				if (path != null) {
 					// Set the text box to the new selection

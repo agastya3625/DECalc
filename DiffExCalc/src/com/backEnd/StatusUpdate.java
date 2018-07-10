@@ -1,7 +1,5 @@
 package com.backEnd;
 
-import java.io.*;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -16,9 +14,6 @@ import org.eclipse.swt.widgets.*;
  * @author Agastya Sharma July 14th, 2017
  */
 public class StatusUpdate {
-	public boolean debug = false; // determines if in debug mode or not
-	private FileWriter ps; // writes to run information file
-	private File runInfo; // File to write run status to
 	private Label label; // Text label to display current task
 	private Text text; // Textbox to show all tasks that have been run
 
@@ -28,32 +23,30 @@ public class StatusUpdate {
 	 * @param label:
 	 *            label to send current update to
 	 * 
-	 * @param runInfo:
-	 *            file to send run log info to.
 	 * 
 	 * @param text:
 	 *            text box to send run upodates to
 	 */
-	public StatusUpdate(File runInfo, Label label, Text text) {
-		this.runInfo = runInfo;
+	public StatusUpdate(Label label, Text text) {
 		this.label = label;
 		this.text = text;
 	}
 
-	/**
-	 * This method sends data to the file via a FileWrtier.
-	 * 
-	 * @param s:
-	 *            String to append to the file.
-	 * 
-	 * @throws IOException
-	 *             caused by FileWriter
-	 */
-	public void sendToFile(String s) throws IOException {
-		ps = new FileWriter(runInfo, true);
-		ps.append(s + "\n");
-		ps.close();
-	}
+	// /**
+	// * This method sends data to the file via a FileWrtier.
+	// *
+	// * @param s:
+	// * String to append to the file.
+	// *
+	// * @throws IOException
+	// * caused by FileWriter
+	// * @deprecated 7/25/17: functionality moved to R
+	// */
+	// public void sendToFile(String s) throws IOException {
+	// ps = new FileWriter(runInfo, true);
+	// ps.append(s + "\n");
+	// ps.close();
+	// }
 
 	/**
 	 * This method appends status updates to the text box as well as updates the
@@ -63,9 +56,6 @@ public class StatusUpdate {
 	 *            new status update
 	 */
 	public void appendStatusLabel(String s) {
-		if (debug) {
-			System.out.println(s);
-		}
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				text.append(s + "\n");
@@ -76,6 +66,7 @@ public class StatusUpdate {
 					label = new Label(shell, SWT.NONE);
 					label.setText(s + "\n");
 					label.setBounds(r);
+					label.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
 				}
 			}
 		});

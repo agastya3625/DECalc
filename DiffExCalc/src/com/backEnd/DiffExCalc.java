@@ -1,7 +1,6 @@
 package com.backEnd;
 
 import java.io.*;
-import java.text.*;
 import java.util.*;
 
 import org.eclipse.swt.widgets.*;
@@ -44,29 +43,22 @@ public class DiffExCalc {
 	 *            text box that shows complete history of run tasks
 	 * 
 	 */
-	public static void main(String[] args, ArrayList<ArrayList<String>> comps, ProgressBar progressBar, File runInfo,
-			Label label, Text text, String delimiterData, String delimiterMeta) {
-		if (runInfo.exists()) {
-			String absPath = runInfo.getAbsolutePath();
-			runInfo.delete();
-			runInfo = new File(absPath);
-		}
-		if(delimiterData != null && delimiterMeta != null){
-			if(delimiterData.equals("tab")){
+	public static void main(String[] args, ArrayList<ArrayList<String>> comps, ProgressBar progressBar, Label label,
+			Text text, String delimiterData, String delimiterMeta) {
+		if (delimiterData != null && delimiterMeta != null) {
+			if (delimiterData.equals("tab")) {
 				delimiterData = "\t";
 			}
-			if(delimiterMeta.equals("tab")){
+			if (delimiterMeta.equals("tab")) {
 				delimiterMeta = "\t";
 			}
 		}
-		long startTime = System.currentTimeMillis();
-		// used to display the time taken to run.
 		try {
 			dataMatrix = new File(args[0]);
 			metafolder = new File(args[1]);
 			outputDir = new File(args[2]);
 			filePreProcessing(delimiterData, delimiterMeta);
-			su = new StatusUpdate(runInfo, label, text);
+			su = new StatusUpdate(label, text);
 			headers(args);
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
@@ -81,7 +73,6 @@ public class DiffExCalc {
 				}
 			});
 			// executes the R script
-			su.sendToFile("\n######## DESeq2 Script Information #########");
 			executeR(dataMatrix, metafolder, outputDir, comps);
 			footers();
 			Display.getDefault().asyncExec(new Runnable() {
@@ -95,46 +86,11 @@ public class DiffExCalc {
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		} finally {
-			// always gives the total run time of the run
-			try {
-				su.sendToFile(showRunTime(startTime));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
-	/**
-	 * This method calculates the run time of the program and displays it the
-	 * the HH:MM:SS.millisec format.
-	 * 
-	 * @param startTime:
-	 *            stating time of the program, taken as the time at the start of
-	 *            the program
-	 * 
-	 * @return String HH:MM:SS.millisec format String
-	 * 
-	 */
-	private static String showRunTime(long startTime) {
-		long endTime = System.currentTimeMillis();
-		int millisec = Math.round(((endTime - startTime)));
-		int hours = millisec / 3600000;
-		int minutes = (millisec / 60000) - hours * 60;
-		int seconds = (millisec / 1000) - minutes * 60 - hours * 3600;
-		int milliseconds = millisec - seconds * 1000 - minutes * 60000 - hours * 3600000;
-		return "Total Run Time: " + String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":"
-				+ String.format("%02d", seconds) + "." + String.format("%03d", milliseconds);
-
-	}
-
 	private static void headers(String[] args) throws IOException {
-		su.sendToFile("Date and time of run start: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
-		su.sendToFile("\n######## Run Information #########\n");
-		su.sendToFile("Data File: " + args[0] + "\n");
-		su.sendToFile("metadata folder: " + args[1] + "\n");
-		su.sendToFile("Results placed in: " + args[2] + "\n");
 		su.appendStatusLabel("Run Started...");
-
 	}
 
 	/**
@@ -173,6 +129,7 @@ public class DiffExCalc {
 		if (datamatrix.isDirectory()) {
 			dataDirectory = true;
 			dataFiles = datamatrix.listFiles(Config.FileFilter);
+			Arrays.sort(dataFiles);
 		} else {
 			dataDirectory = false;
 			dataFiles = null;
@@ -180,7 +137,7 @@ public class DiffExCalc {
 		if (metadata.isDirectory()) {
 			metadataDirectory = true;
 			metadatalist = metadata.listFiles(Config.FileFilter);
-
+			Arrays.sort(metadatalist);
 		} else {
 			metadataDirectory = false;
 			metadatalist = null;
@@ -254,7 +211,6 @@ public class DiffExCalc {
 			if (!comps.get(i).isEmpty()) {
 				String command = Config.R_COMMAND + " " + "\"" + fileName + "\"" + " " + data + " " + "\"" + meta + "\""
 						+ " " + compars + " " + "\"" + outdir + "\"" + " " + conts;
-				su.sendToFile("Command Line for metadata file " + meta + ":\n\n" + command + "\n\n");
 				pout.println(command);
 			}
 		}
@@ -320,7 +276,6 @@ public class DiffExCalc {
 						});
 						su.appendStatusLabel(output + "...");
 					}
-					su.sendToFile(output);
 				} else {
 					su.appendStatusLabel(output + "...");
 				}
@@ -344,8 +299,6 @@ public class DiffExCalc {
 	}
 
 	private static void footers() throws IOException {
-		su.sendToFile("\n######## Script Finished #########");
-		su.sendToFile("\nDate and time of run end: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 		su.appendStatusLabel("Run Finished.");
 	}
 
@@ -409,6 +362,32 @@ public class DiffExCalc {
 	// DEPRECATED METHODS BELOW //
 	//////////////////////////////////////////////////////////////////////////////////////
 
+	// /**
+	// * This method calculates the run time of the program and displays it the
+	// * the HH:MM:SS.millisec format.
+	// *
+	// * @param startTime:
+	// * stating time of the program, taken as the time at the start of
+	// * the program
+	// *
+	// * @return String HH:MM:SS.millisec format String
+	// * @deprecated 7/25/18: functionality moved to R script
+	// *
+	// */
+	// private static String showRunTime(long startTime) {
+	// long endTime = System.currentTimeMillis();
+	// int millisec = Math.round(((endTime - startTime)));
+	// int hours = millisec / 3600000;
+	// int minutes = (millisec / 60000) - hours * 60;
+	// int seconds = (millisec / 1000) - minutes * 60 - hours * 3600;
+	// int milliseconds = millisec - seconds * 1000 - minutes * 60000 - hours *
+	// 3600000;
+	// return "Total Run Time: " + String.format("%02d", hours) + ":" +
+	// String.format("%02d", minutes) + ":"
+	// + String.format("%02d", seconds) + "." + String.format("%03d",
+	// milliseconds);
+	//
+	// }
 	// /**
 	// * This method returns a GenesList based on the biological trial name. It
 	// is

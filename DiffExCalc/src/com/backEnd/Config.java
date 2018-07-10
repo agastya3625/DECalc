@@ -76,12 +76,12 @@ public class Config {
 	 * Operating system type of the user (either windows or mac)
 	 */
 	public static String OS_TYPE;
-	
+
 	/**
 	 * Sample data file
 	 */
 	public static String SAMPLE_DATA_FILE = "sample_data.csv";
-	
+
 	/**
 	 * Sample metadata file
 	 */
@@ -124,7 +124,7 @@ public class Config {
 	 * Image icon file
 	 */
 	public static ImageData ICON = null;
-	
+
 	/**
 	 * Image icon file
 	 */
@@ -141,7 +141,8 @@ public class Config {
 	public static final String BKGD_FILE = "startup.jpg";
 
 	/**
-	 * R script that gets the current R version to ensure that the program is runnable. 
+	 * R script that gets the current R version to ensure that the program is
+	 * runnable.
 	 */
 	public static String VERS = "getVersion.R";
 
@@ -149,7 +150,7 @@ public class Config {
 	 * directory that stores all resources needed by the GUI
 	 */
 	public static File TEMP_DIR;
-	
+
 	/**
 	 * width of the main application window
 	 */
@@ -159,7 +160,7 @@ public class Config {
 	 * height of the main application window
 	 */
 	public static int SHELL_HEIGHT;
-	
+
 	/**
 	 * standard height of textboxes
 	 */
@@ -169,88 +170,102 @@ public class Config {
 	 * standard textbox width
 	 */
 	public static int textWt = 250;
-	
+
 	/**
 	 * standard button width
 	 */
-	public static int BUTTON_WIDTH = 150;
-	
+	public static int BUTTON_WIDTH = 125;
+
+	public static String PLOTTER_NAME = "Volcano_TPM_Plot.R";
 	/**
 	 * standard margin
 	 */
 	public static int MARGIN = 25;
-	
-	/**
-	 * defines a rectangle in the right bottom corner of the window that is a template for placing buttons. 
-	 */
-	public static Rectangle RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15, Config.SHELL_HEIGHT - Config.textHt - 35,
-				Config.BUTTON_WIDTH, Config.textHt);
-	
-	/**
-	 * defines a rectangle in the left bottom corner of the window that is a template for placing buttons. 
-	 */
-	public static Rectangle LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 35, Config.BUTTON_WIDTH, Config.textHt);
+
+	public static int helpButtonX = 180 + Config.textWt + 2 * Config.BUTTON_WIDTH;
 
 	/**
-	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
+	 * defines a rectangle in the right bottom corner of the window that is a
+	 * template for placing buttons.
 	 */
-	public static Rectangle TOP_LEFT_CORNER_A = new Rectangle(225, 10, Config.BUTTON_WIDTH/2 + 5, Config.textHt);
-	
-	/**
-	 * defines a rectangle in the left top corner of the window that is a template for placing buttons. 
-	 */
-	public static Rectangle TOP_LEFT_CORNER_B = new Rectangle(325, 10, 2 * Config.BUTTON_WIDTH/3 + 5, Config.textHt);
-
+	public static Rectangle RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15,
+			Config.SHELL_HEIGHT - Config.textHt - 150, Config.BUTTON_WIDTH, Config.textHt);
 
 	/**
-	 * progress bar to monitor the run progress 
+	 * defines a rectangle in the right bottom corner of the window that is a
+	 * template for placing buttons.
 	 */
-	public static Rectangle PROGRESS_BAR = new Rectangle(Config.SHELL_WIDTH - 320, 30, 300, 20);
-	
+	public static Rectangle RIGHT_CORNER_B = new Rectangle(Config.SHELL_WIDTH / 2 - Config.BUTTON_WIDTH / 2,
+			Config.SHELL_HEIGHT - Config.textHt - 200, Config.BUTTON_WIDTH, Config.textHt);
+
+	/**
+	 * defines a rectangle in the left bottom corner of the window that is a
+	 * template for placing buttons.
+	 */
+	public static Rectangle LEFT_CORNER = new Rectangle(25,
+			100/* Config.SHELL_HEIGHT - Config.textHt - 150 */, Config.BUTTON_WIDTH, Config.textHt);
+
+	/**
+	 * defines a rectangle in the left top corner of the window that is a
+	 * template for placing buttons.
+	 */
+	public static Rectangle TOP_LEFT_CORNER_A = new Rectangle(225, 10, Config.BUTTON_WIDTH / 2 + 5, Config.textHt);
+
+	/**
+	 * defines a rectangle in the left top corner of the window that is a
+	 * template for placing buttons.
+	 */
+	public static Rectangle TOP_LEFT_CORNER_B = new Rectangle(325, 10, 2 * Config.BUTTON_WIDTH / 3 + 5, Config.textHt);
+
+	/**
+	 * progress bar to monitor the run progress
+	 */
+	public static Rectangle PROGRESS_BAR = new Rectangle(25, 30, 300, 20);
+
 	/**
 	 * shows the current task being executed
 	 */
-	public static Rectangle PROGRESS_LABEL = new Rectangle(Config.SHELL_WIDTH - 558, 60, 200, 20);
-	
+	public static Rectangle PROGRESS_LABEL = new Rectangle(50, 60, 200, 20);
+
 	/**
 	 * message shown to user on startup
 	 */
 	public static String aboutMessage = "Version: 1.0\nRelease: Jule 14th, 2017\nAuthor: Agastya Sharma\n\nDECalc is a java swt-based GUI allows users to easily run DESeq2 for their data sets.\n\nNuts and Bolts:\n\tR and DESeq2:"
 			+ "\n\t\tUnderneath the GUI, DECalc runs an R script. To see this script, go to Show -> R script. \n\t\tThis R script was created to take in command line arguments and runs a DESeq2 test based \n\t\ton a two-variable design formula. \n\t\tTo see a sample two-variable data set and associated metadata, \n\t\tgo to Help -> Sample data file or Help -> Sample metadata file. \n\t\tTo learn more about how DESeq2 works, the manual is under Help -> DESeq2 Manual. It is \n\t\tadvised to read through the manual before uploading any custom R scripts, as this can \n\t\tchange how the GUI runs. If using more than two variables in the design formula, it is \n\t\tIMPERATIVE that you use a custom R script, or edit the R script's provided design formula \n\t\tto accomodate these new variables. \n\n\t\tCAUTION: Using a custom script may affect the performance of the GUI. \n\n\tJava:\n\t\tThe GUI is built under Java 8, and uses the SWT toolkit to provide the graphics. \n\t\tSource code and documentation can be found at this URL: ";
-	
+
 	/**
-	 * user preferences file 
+	 * user preferences file
 	 */
 	public static String prefs = "prefs.txt";
-	
-	
-	public static GridData GRID_DATA_FILL= new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 
-	
-	
+	public static GridData GRID_DATA_FILL = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+
 	/**
-	 * This method resizes all GUI elements to fit the screen that they are on. 
+	 * This method resizes all GUI elements to fit the screen that they are on.
 	 * 
-	 * @param newWidth: width of new display monitor
+	 * @param newWidth:
+	 *            width of new display monitor
 	 * 
-	 * @param newHeight: height of new display monitor
+	 * @param newHeight:
+	 *            height of new display monitor
 	 * 
 	 */
-	public static void ResizeAll(int newWidth, int newHeight){
+	public static void ResizeAll(int newWidth, int newHeight) {
 		Config.SHELL_HEIGHT = newHeight;
 		Config.SHELL_WIDTH = newWidth;
 		Config.PROGRESS_LABEL = new Rectangle(Config.SHELL_WIDTH - 558, 60, 600, 20);
-		Config.RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15, Config.SHELL_HEIGHT - Config.textHt - 35,
-				Config.BUTTON_WIDTH, Config.textHt);
-		Config.LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 35, Config.BUTTON_WIDTH, Config.textHt);
+		Config.RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15,
+				Config.SHELL_HEIGHT - Config.textHt - 35, Config.BUTTON_WIDTH, Config.textHt);
+		Config.LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 35, Config.BUTTON_WIDTH,
+				Config.textHt);
 		Config.PROGRESS_BAR = new Rectangle(Config.SHELL_WIDTH - 568, 30, 500, 50);
-		if(System.getProperty("os.name").toLowerCase().contains("win")){
-			Config.RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15, Config.SHELL_HEIGHT - Config.textHt - 55,
-					Config.BUTTON_WIDTH, Config.textHt);
-			Config.LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 55, Config.BUTTON_WIDTH, Config.textHt);
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
+			Config.RIGHT_CORNER = new Rectangle(Config.SHELL_WIDTH - Config.BUTTON_WIDTH - 15,
+					Config.SHELL_HEIGHT - Config.textHt - 55, Config.BUTTON_WIDTH, Config.textHt);
+			Config.LEFT_CORNER = new Rectangle(25, Config.SHELL_HEIGHT - Config.textHt - 55, Config.BUTTON_WIDTH,
+					Config.textHt);
 		}
 	}
-	
 
 	/**
 	 * This method verifies the java version by splitting the String into
@@ -286,7 +301,7 @@ public class Config {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * This method calculates the total number of elements in a 2D ArrayList.
 	 * Example: if the ArrayList contains 3 other lists, each with 4 elements,
@@ -304,6 +319,6 @@ public class Config {
 			toReturn += List2D.get(i).size();
 		}
 		return toReturn;
-	}	
-	
+	}
+
 }

@@ -30,7 +30,11 @@ public class FileFilterer implements FilenameFilter {
 	 */
 	@Override
 	public boolean accept(File dir, String name) {
-		if (dir.getName().startsWith(".")) {
+		if (name.startsWith(".")) {
+			return false;
+		} else if(name.toLowerCase().contains("run log")){
+			return false;
+		} else if(name.contains("_SIG.csv")){
 			return false;
 		}
 		return true;

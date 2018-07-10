@@ -7,8 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import com.backEnd.Config;
@@ -29,8 +28,11 @@ public class MainWindow {
 	private Color WHITE; // standard white color of text
 	private String[] cmds = new String[3]; // stores command line args for
 											// DiffExCalc.java
+	private String TPM = new String();
+	private String name = new String();
 	private ArrayList<ArrayList<String>> comps; // list of comparisons to
 												// perform
+	private ArrayList<ArrayList<String>> compars;
 	private ArrayList<ButtonList> CheckBoxes;
 	private Text data; // data file Text field
 	private Text meta; // metadata folder text field
@@ -38,8 +40,12 @@ public class MainWindow {
 	private String datadelim;
 	private String metadelim;
 	private Display display; // display of the app
+	private ArrayList<File> filtered;
+	private String resname;
+	// private File outDir;
 	private static Label statusLabel; // shows current run status
 	private static Button runButton, backButton; // "Run" and "Back" buttons
+	private static File outDir;
 
 	/**
 	 * This constructor makes the main window and starts the UI generation
@@ -64,8 +70,8 @@ public class MainWindow {
 	 *            display that the shell should be created within
 	 */
 	private void makeParentShell(Display display) {
-		shell = new Shell(display/* , Config.SHELL_STYLE */);
-		shell.setLayout(new GridLayout(7, false));
+		shell = new Shell(display, SWT.SHELL_TRIM/* Config.SHELL_STYLE */);
+		shell.setLayout(new GridLayout(1, false));
 		makeUI();// makes the rest of the UI
 		// makes the and sets the background image of the main window
 		shell.setBackgroundImage(new Image(display, Config.BKGD));
@@ -75,11 +81,10 @@ public class MainWindow {
 		int x = bounds.x + (bounds.width - rect.width) / 2;
 		int y = bounds.y + (bounds.height - rect.height) / 2;
 		shell.setLocation(x, y);
-		shell.pack();
+		// shell.pack();
 		shell.open();
-		shell.setSize(800, 300);
+		shell.setSize(800, 350);
 		shell.setImage(new Image(display, Config.ICON));
-		shell.setBackgroundMode(SWT.INHERIT_DEFAULT);
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -94,6 +99,15 @@ public class MainWindow {
 	 */
 	private void makeUI() {
 		makeMenu();
+		TabFolder tabFolder = new TabFolder(shell, SWT.BORDER);
+		TabItem tabItem = new TabItem(tabFolder, SWT.NULL);
+		tabItem.setText("Run DESeq2");
+		TabItem tabItem2 = new TabItem(tabFolder, SWT.NULL);
+		tabItem2.setText("Show Plotter");
+		Group DESeq = new Group(tabFolder, SWT.NONE);
+		tabItem.setControl(DESeq);
+		Group Plotter = new Group(tabFolder, SWT.NONE);
+		tabItem2.setControl(Plotter);
 		/// MAKE FILE BROWSERS, DELIMITERS, AND BUTTONS
 		// listeners for the browse buttons
 		ModifyListener datalistener = new ModifyListener() {
@@ -114,74 +128,62 @@ public class MainWindow {
 		};
 
 		// DATA ROW
-		Label label = new Label(shell, SWT.NULL);
+		Label label = new Label(DESeq, SWT.NULL);
 		label.setText("Data File/Folder: ");
 		label.setForeground(WHITE);
-		data = new Text(shell, SWT.SINGLE);
+		label.setBounds(10, 10, 125, Config.textHt);
+		data = new Text(DESeq, SWT.SINGLE);
 		data.addModifyListener(datalistener);
-		GridData gridData1 = new GridData(GridData.FILL_HORIZONTAL);
-		gridData1.widthHint = Config.textWt;
-		gridData1.heightHint = Config.textHt;
-		data.setLayoutData(gridData1);
+		data.setBounds(150, 10, Config.textWt, Config.textHt);
 		FileBrowsers fbb = new FileBrowsers(data);
-		Button dataFile = fbb.FileBrowseButton(shell);
-		dataFile.setLayoutData(Config.GRID_DATA_FILL);
-		Button dataFolder = fbb.diags(shell);
-		dataFolder.setLayoutData(Config.GRID_DATA_FILL);
-		Label label2 = new Label(shell, SWT.CENTER);
-		label2.setText("File delimiter:");
-		label2.setForeground(WHITE);
-		Text t = new Text(shell, SWT.SINGLE);
-		t.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				datadelim = t.getText();
-			}
-		});
-		new HelpButton(Config.dataHelpMessage, Config.dataHelpHeader).Help(shell);
+		Button dataFile = fbb.FileBrowseButton(DESeq);
+		dataFile.setBounds(165 + Config.textWt, 10, Config.BUTTON_WIDTH, Config.textHt);
+		Button dataFolder = fbb.diags(DESeq);
+		dataFolder.setBounds(180 + Config.textWt + Config.BUTTON_WIDTH, 10, Config.BUTTON_WIDTH, Config.textHt);
+		new HelpButton(Config.dataHelpMessage, Config.dataHelpHeader).Help(DESeq).setBounds(Config.helpButtonX, 10, 50,
+				Config.textHt);
 
 		// METADATA ROW
-		label = new Label(shell, SWT.CENTER);
+		label = new Label(DESeq, SWT.NULL);
 		label.setForeground(WHITE);
 		label.setText("Metadata File/Folder:");
-		meta = new Text(shell, SWT.SINGLE);
+		label.setBounds(10, 50, 125, Config.textHt);
+		meta = new Text(DESeq, SWT.SINGLE);
 		meta.addModifyListener(metalistener);
-		meta.setLayoutData(gridData1);
+		meta.setBounds(150, 50, Config.textWt, Config.textHt);
 		FileBrowsers fbb2 = new FileBrowsers(meta);
-		Button metaFile = fbb2.FileBrowseButton(shell);
-		metaFile.setLayoutData(Config.GRID_DATA_FILL);
-		Button metaFolder = fbb2.diags(shell);
-		metaFolder.setLayoutData(Config.GRID_DATA_FILL);
-		Label label3 = new Label(shell, SWT.CENTER);
-		label3.setText("File delimiter:");
-		label3.setForeground(WHITE);
-		Text meta3 = new Text(shell, SWT.SINGLE);
-		meta3.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				metadelim = meta3.getText();
-			}
-		});
-		new HelpButton(Config.metadataHelpMessage, Config.metadataHelpHeader).Help(shell);
+		Button metaFile = fbb2.FileBrowseButton(DESeq);
+		metaFile.setBounds(165 + Config.textWt, 50, Config.BUTTON_WIDTH, Config.textHt);
+		Button metaFolder = fbb2.diags(DESeq);
+		metaFolder.setBounds(180 + Config.textWt + Config.BUTTON_WIDTH, 50, Config.BUTTON_WIDTH, Config.textHt);
+		new HelpButton(Config.metadataHelpMessage, Config.metadataHelpHeader).Help(DESeq).setBounds(Config.helpButtonX,
+				50, 50, Config.textHt);
 
 		// RESULTS ROW
-		label = new Label(shell, SWT.CENTER);
+		label = new Label(DESeq, SWT.NULL);
 		label.setForeground(WHITE);
 		label.setText("Results Folder: ");
-		res = new Text(shell, SWT.SINGLE);
+		label.setBounds(10, 90, 125, Config.textHt);
+		res = new Text(DESeq, SWT.SINGLE);
 		res.addModifyListener(reslistener);
-		res.setLayoutData(gridData1);
+		res.setBounds(150, 90, Config.textWt, Config.textHt);
 		FileBrowsers fbb4 = new FileBrowsers(res);
-		Button resBrowse = fbb4.diags(shell);
-		resBrowse.setLayoutData(Config.GRID_DATA_FILL);
-		new HelpButton(Config.resultsHelpMessage, Config.resultsHelpHeader).Help(shell);
-		;
+		Button resBrowse = fbb4.diags(DESeq);
+		resBrowse.setBounds(165 + Config.textWt, 90, Config.BUTTON_WIDTH, Config.textHt);
+		new HelpButton(Config.resultsHelpMessage, Config.resultsHelpHeader).Help(DESeq)
+				.setBounds(180 + Config.textWt + Config.BUTTON_WIDTH, 90, 50, Config.textHt);
 
 		// NEXT BUTTON
-		Button msgBtn = new Button(shell, SWT.PUSH);
+		Button msgBtn = new Button(DESeq, SWT.PUSH);
 		msgBtn.setText("Next ->");
 		msgBtn.addListener(SWT.Selection, event -> findComps());
-		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_END);
-		gridData.horizontalSpan = 7;
-		msgBtn.setLayoutData(gridData);
+		msgBtn.setBounds(645, 250, Config.BUTTON_WIDTH, Config.textHt);
+
+		// MAKE PLOTTER START SCREEN
+		Group g = new Group(tabFolder, SWT.NONE);
+		tabItem2.setControl(g);
+		showPlot(g);
+
 	}
 
 	/**
@@ -298,11 +300,11 @@ public class MainWindow {
 		firstData.horizontalSpan = 2;
 		first.setLayoutData(firstData);
 		ScrolledComposite firstScroll = new ScrolledComposite(first, SWT.V_SCROLL);
-		firstScroll.setLayout(new GridLayout(2, false));
-		firstScroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		Composite firstContent = new Composite(firstScroll, SWT.NONE);
-		firstContent.setLayout(new GridLayout(2, false));
-		firstContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		RowLayout rl = new RowLayout(SWT.VERTICAL);
+		rl.wrap = true;
+		firstContent.setLayout(rl);
+		firstContent.setLayoutData(new RowData());
 		backButton = new Button(shell, SWT.PUSH);
 		backButton.setText("<- Back");
 		backButton.addListener(SWT.Selection, event -> goBack());
@@ -313,7 +315,7 @@ public class MainWindow {
 		runButton.addListener(SWT.Selection, event -> {
 			try {
 				label.dispose();
-				runDESeq2(first);
+				runDESeq2(first, firstScroll);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -353,8 +355,9 @@ public class MainWindow {
 		firstScroll.setContent(firstContent);
 		firstScroll.setExpandHorizontal(true);
 		firstScroll.setExpandVertical(true);
-		firstScroll.setMinSize(new Point(Config.SHELL_WIDTH, CheckBoxes.size() * Config.textHt * 2 + 5000));
+		firstScroll.setMinSize(new Point(Config.SHELL_WIDTH - 50, (CheckBoxes.size() / 6) * Config.textHt * 2 + 500));
 		shell.pack();
+		shell.setSize(800, 350);
 
 	}
 
@@ -365,26 +368,25 @@ public class MainWindow {
 	 * a text box in the UI to the user upon completion.
 	 * 
 	 * @param firstContent
+	 * @param firstScroll
 	 * 
 	 * @throws IOException
 	 *             if the file cannot be found/written to. Rarely throws
 	 *             exception, as the file is auto-generated and is not dependent
 	 *             on user input whatsoever.
 	 */
-	private void runDESeq2(Group firstContent) throws IOException {
-//		for(Control s: firstContent.getChildren()){
-//			s.dispose();
-//		}
+	private void runDESeq2(Group firstContent, ScrolledComposite firstScroll) throws IOException {
 		try {
+			// firstContent.dispose();
 			if (Config.OS_TYPE.toLowerCase().contains("win")) {
 				statusLabel.setForeground(WHITE);
 			}
 			runButton.dispose();
 			backButton.dispose();
-			File info = new File(cmds[2] + "/DESeq_Run_Log.txt");
+			// File info = new File(cmds[2] + "/DESeq_Run_Log.txt");
 			dataErrCheck(new File(cmds[0]));
 			dataErrCheck(new File(cmds[1]));
-			ArrayList<ArrayList<String>> compars = setCompars(CheckBoxes);
+			compars = setCompars(CheckBoxes);
 			// shows the data/metadata/results options selected, as well as the
 			// comparisons selected and the outputs of the R script.
 			MessageBox dia = new MessageBox(shell, Config.INFO_STYLE);
@@ -395,50 +397,51 @@ public class MainWindow {
 				dia.open();
 				findComps();
 			} else {
+				firstScroll.dispose();
+				firstContent.dispose();
+				shell.setLayout(null);
 				Thread thread;
-				GridData firstData = new GridData(SWT.FILL, SWT.FILL, true, false);
-				firstData.horizontalSpan = 2;
-				firstContent.setBackground(WHITE);
-				Label l = new Label(firstContent, SWT.NONE);
-				//l.setForeground(WHITE);
+				Label l = new Label(shell, SWT.NONE);
 				l.setText("Run Progress");
 				l.setFont(new Font(l.getDisplay(), new FontData("Arial", 16, SWT.BOLD)));
-				l.setLayoutData(firstData);
-				progressBar = new ProgressBar(firstContent, SWT.HORIZONTAL);
-				progressBar.setLayoutData(firstData);
-				statusLabel = new Label(firstContent, SWT.NONE);
-				statusLabel.setLayoutData(firstData);
-				//statusLabel.setForeground(WHITE);
-				Text text = new Text(firstContent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-				GridData secondData = new GridData(SWT.FILL, SWT.FILL, false, false);
-//				secondData.widthHint = 400;
-//				secondData.heightHint = 100;
-				text.setLayoutData(secondData);
+				l.setForeground(WHITE);
+				l.setBounds(25, 25, Config.textWt, Config.textHt);
+				progressBar = new ProgressBar(shell, SWT.HORIZONTAL);
+				progressBar.setBounds(Config.PROGRESS_BAR);
+				progressBar.setBackground(WHITE);
+				statusLabel = new Label(shell, SWT.NONE);
+				statusLabel.setForeground(WHITE);
+				statusLabel.setBounds(Config.PROGRESS_LABEL);
+				Text text = new Text(shell, SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+				text.setBounds(25, 100, 750, 150);
 				Button startNew = new Button(shell, SWT.PUSH);
 				startNew.setText("New Run");
+				startNew.setBounds(Config.LEFT_CORNER);
 				startNew.addListener(SWT.Selection, event -> startNew());
 				startNew.setEnabled(false);
-				for (ButtonList b : CheckBoxes) {
-					b.getFileButton().dispose();
-					for (Button button : b) {
-						button.dispose();
+				Button stop = new Button(shell, SWT.PUSH);
+				stop.setText("Show Plots");
+				stop.setEnabled(false);
+				stop.setBounds(Config.RIGHT_CORNER);
+				stop.addListener(SWT.Selection, new Listener() {
+					public void handleEvent(Event e) {
+						disposeChildren(shell);
+						showPlot(shell);
 					}
-				}
-
-				shell.pack();
-				dia.setMessage("Run Started. Run information is stored in:\n" + info.getPath()
-						+ ". \n\nProjected run time: " + ((Config.getSize(compars)) + 4) + " minutes.");
+				});
+				dia.setMessage("Run Started. Projected run time: " + ((Config.getSize(compars)) + 4) + " minutes.");
 				dia.open();
-
 				thread = new Thread(new Runnable() {
 					@Override
 					public void run() {
 						try {
-							DiffExCalc.main(cmds, compars, progressBar, info, statusLabel, text, datadelim, metadelim);
+							outDir = new File(cmds[Config.RESULTS_POS]);
+							DiffExCalc.main(cmds, compars, progressBar, statusLabel, text, datadelim, metadelim);
 							display.asyncExec(new Runnable() {
 								@Override
 								public void run() {
 									startNew.setEnabled(true);
+									stop.setEnabled(true);
 								}
 							});
 						} catch (Exception e) {
@@ -454,17 +457,7 @@ public class MainWindow {
 					}
 				});
 				thread.start();
-				Button stop = new Button(shell, SWT.PUSH);
-				stop.setText("Stop Run");
-				stop.addListener(SWT.Selection, new Listener() {
-					public void handleEvent(Event e) {
-						thread.interrupt();
-						disposeChildren(shell);
-						makeUI();
-						System.out.println("Thread stopped.");
-					}
-				});
-				shell.pack();
+
 			}
 		} catch (FileFormatException e) {
 			display.beep();
@@ -473,6 +466,109 @@ public class MainWindow {
 			dia.open();
 		}
 
+	}
+
+	private void showPlot(Composite c) {
+		if (c instanceof Shell) {
+			disposeChildren((Shell) c);
+		}
+		ModifyListener datalistener = new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setChangedData((Text) e.widget, 6);
+			}
+		};
+		ModifyListener reslistener = new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setChangedData((Text) e.widget, 7);
+			}
+		};
+		Label label = new Label(c, SWT.NULL);
+		label.setText("TPM File: ");
+		label.setForeground(WHITE);
+		label.setBounds(10, 10, 100, Config.textHt);
+		Text data = new Text(c, SWT.SINGLE);
+		data.setBounds(50 + Config.textWt - 175, 10, Config.textWt, Config.textHt);
+		data.addModifyListener(datalistener);
+		FileBrowsers fbb = new FileBrowsers(data);
+		Button dataFile = fbb.FileBrowseButton(c);
+		dataFile.setBounds(2 * Config.textWt - 100, 10, Config.BUTTON_WIDTH, Config.textHt);
+		if (c instanceof Shell) {
+			Label l = new Label(shell, SWT.NULL);
+			l.setText("Comparison: ");
+			l.setForeground(WHITE);
+			l.setBounds(25, 50, Config.textWt, Config.textHt);
+			Table table = new Table(c, SWT.CHECK | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+			TableItem all = new TableItem(table, SWT.NONE);
+			all.setText("Select All");
+			String[] items = getFileNames(new File(cmds[Config.RESULTS_POS] + "/DESeq Results"));
+			for (String s : items) {
+				TableItem item = new TableItem(table, SWT.NONE);
+				item.setText(s);
+			}
+			table.setSize(Config.textWt, Config.textHt);
+			table.setBounds(50 + Config.textWt - 175, 50, Config.textWt, Config.textHt * 5);
+			Button start = new Button(c, SWT.PUSH);
+			start.setText("Show Plot");
+			start.setBounds(Config.RIGHT_CORNER);
+			start.addListener(SWT.Selection, new Listener() {
+				public void handleEvent(Event e) {
+					if (all.getChecked()) {
+						for (File f : outDir.listFiles(Config.FileFilter)) {
+							runPlotter(outDir.getAbsolutePath() + "/" + f.getName(), 1);
+						}
+					} else {
+						TableItem[] items = table.getItems();
+						int all = 0;
+						ArrayList<TableItem> allTrue = new ArrayList<TableItem>();
+						for (TableItem t : items) {
+							if (t.getChecked()) {
+								allTrue.add(t);
+							}
+						}
+						if (allTrue.size() > 5) {
+							all = 1;
+						}
+						for (TableItem t : allTrue) {
+							name = outDir.getAbsolutePath() + "/" + t.getText() + "_RES.csv";
+							runPlotter(name, all);
+						}
+					}
+
+				}
+			});
+		} else {
+			Text res = new Text(c, SWT.SINGLE);
+			res.setBounds(50 + Config.textWt - 175, 50, Config.textWt, Config.textHt);
+			res.addModifyListener(reslistener);
+			label = new Label(c, SWT.NULL);
+			label.setText("Results File: ");
+			label.setForeground(WHITE);
+			label.setBounds(10, 50, 100, Config.textHt);
+			FileBrowsers fbb2 = new FileBrowsers(res);
+			Button resFile = fbb2.FileBrowseButton(c);
+			resFile.setBounds(2 * Config.textWt - 100, 50, Config.BUTTON_WIDTH, Config.textHt);
+			Button start = new Button(c, SWT.PUSH);
+			start.setText("Show Plot");
+			start.setBounds(645, 250, Config.BUTTON_WIDTH, Config.textHt);
+			start.addListener(SWT.Selection, new Listener() {
+				@Override
+				public void handleEvent(Event arg0) {
+					runPlotter(resname, 0);
+				}
+
+			});
+		}
+
+	}
+
+	private String[] getFileNames(File file) {
+		filtered = new ArrayList<File>(Arrays.asList(file.listFiles(Config.FileFilter)));
+		String[] toReturn = new String[filtered.size()];
+		for (int i = 0; i < toReturn.length; i++) {
+			String str = filtered.get(i).getName();
+			toReturn[i] = str.substring(0, str.indexOf("_RES.csv"));
+		}
+		return toReturn;
 	}
 
 	/**
@@ -492,11 +588,14 @@ public class MainWindow {
 	private void setChangedData(Text text, int i) {
 		if (text == null) {
 			return;
-		}
-		if (i == 5) {
+		} else if (i == 7) {
+			resname = text.getText();
+		} else if (i == 6) {
+			TPM = text.getText();
+			return;
+		} else if (i == 5) {
 			if (text.getText().toLowerCase().endsWith(".r")) {
 				Config.RFile_Name = text.getText();
-				// System.out.println(Config.RFile_Name);
 			} else {
 				MessageBox dia = new MessageBox(shell, SWT.ERROR);
 				dia.setText("Please upload an R file.");
@@ -506,6 +605,43 @@ public class MainWindow {
 			cmds[i] = text.getText();
 		}
 
+	}
+
+	/**
+	 * @param text
+	 * @return
+	 */
+	private void runPlotter(String name, int all) {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Process pb = new ProcessBuilder("/usr/local/bin/Rscript", Config.PLOTTER_NAME, TPM, name,
+							Integer.toString(all)).start();
+					BufferedReader read = new BufferedReader(new InputStreamReader(pb.getInputStream()));
+					BufferedReader out = new BufferedReader(new InputStreamReader(pb.getErrorStream()));
+					String output = read.readLine();
+					String error = out.readLine();
+					while (output != null || error != null) {
+						if (error != null) {
+							System.out.println(error);
+						}
+						output = read.readLine();
+						error = out.readLine();
+					}
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+				}
+			}
+		});
+		thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				System.out.println(t.getName() + ": ");
+				e.printStackTrace();
+			}
+		});
+		thread.start();
 	}
 
 	/**
