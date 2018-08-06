@@ -1,6 +1,6 @@
 #library required for running DESeq2
 startTime <- Sys.time()
-library(BiocGenerics)
+require(BiocGenerics)
 sendtoTwoPlaces <- function(logfilename, message){
   message(message)
   cat(message, file = logfilename, sep = "\n", append = TRUE)

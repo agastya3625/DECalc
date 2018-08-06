@@ -1,7 +1,7 @@
-suppressMessages(library(plotly))
-library(crosstalk)
-library(htmltools)
-library(tidyr)
+suppressMessages(require(plotly))
+require(crosstalk)
+require(htmltools)
+require(tidyr)
 args <- commandArgs(trailingOnly = TRUE)
 #args <- array(data = c("/Users/agastya/Desktop/TPMs For All Sequenced Clones.csv", "/Users/agastya/Desktop/sdf/Ctrl_BvsA_RES.csv", "true"))
 data_name <- args[2]
@@ -36,9 +36,9 @@ p1 <- base %>%
 p2 <- base %>%
   add_lines(x = ~clone, y = ~TPM, alpha = 0.3, text = ~gene_id) %>%
   layout(title = compTitle, xaxis = list(title = "Clones"))
-plot <- subplot(p1, p2, titleX = TRUE, widths = c(0.3, 0.7)) %>% 
+plot <- subplot(p1, p2, titleX = TRUE, widths = c(0.2, 0.8)) %>% 
   hide_legend() %>%
-  highlight(dynamic = TRUE, selectize = TRUE)
+  highlight(dynamic = TRUE, selectize = TRUE, color=c('rgba(235,108,47,1','rgba(55,126,184,1)','rgba(77,175,74,1)','rgba(152,78,163,1)'))
 workdir <- paste(plotsDir,compname, "/",sep = "")
 dir.create(workdir)
 setwd(workdir)

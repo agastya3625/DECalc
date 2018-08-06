@@ -300,11 +300,11 @@ public class MainWindow {
 		firstData.horizontalSpan = 2;
 		first.setLayoutData(firstData);
 		ScrolledComposite firstScroll = new ScrolledComposite(first, SWT.V_SCROLL);
+		firstScroll.setMinHeight(15 * comps.size() / 6 + 100);
+		firstScroll.setLayoutData(firstData);
 		Composite firstContent = new Composite(firstScroll, SWT.NONE);
-		RowLayout rl = new RowLayout(SWT.VERTICAL);
-		rl.wrap = true;
-		firstContent.setLayout(rl);
-		firstContent.setLayoutData(new RowData());
+		// firstContent.setLayout(new GridLayout(6, false));
+		// firstContent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		backButton = new Button(shell, SWT.PUSH);
 		backButton.setText("<- Back");
 		backButton.addListener(SWT.Selection, event -> goBack());
@@ -324,6 +324,9 @@ public class MainWindow {
 
 		// checkboxes are shown in columns with 30 comparisons in each check
 		// box.
+		int x = 10;
+		int y = 10;
+		int count = 0;
 		for (int i = 0; i < comps.size(); i++) {
 			// i2 stores the value of i for the purpose of selecting all
 			// comparisons in an entire file
@@ -331,6 +334,14 @@ public class MainWindow {
 			// this part of the loop sets a checkbox to allow the user to select
 			// all comparisons within a single file.
 			Button file = new Button(firstContent, SWT.CHECK);
+			file.setBounds(x, y, 150, Config.textHt);
+			count++;
+			y += Config.textHt + 10;
+			if (count > Config.getSize(comps) / 6) {
+				x += 10 + 150;
+				count = 0;
+				y = 10;
+			}
 			file.setText("Metadata file " + (i + 1));
 			file.setForeground(WHITE);
 			file.addSelectionListener(new SelectionAdapter() {
@@ -349,6 +360,14 @@ public class MainWindow {
 				Button b = new Button(firstContent, SWT.CHECK);
 				b.setText(comps.get(i).get(j));
 				b.setForeground(WHITE);
+				b.setBounds(x, y, 150, Config.textHt);
+				count++;
+				y += Config.textHt + 10;
+				if (count > Config.getSize(comps) / 6) {
+					x += 10 + 150;
+					count = 0;
+					y = 10;
+				}
 				CheckBoxes.get(i).add(b);
 			}
 		}
@@ -651,8 +670,8 @@ public class MainWindow {
 	 * 
 	 */
 	private void goBack() {
-		disposeChildren(shell);
-		makeUI();
+		shell.dispose();
+		makeParentShell(display);
 		for (int i = 0; i < cmds.length; i++) {
 			cmds[i] = null;
 		}
@@ -857,5 +876,4 @@ public class MainWindow {
 		}
 		return toReturn;
 	}
-
 }
