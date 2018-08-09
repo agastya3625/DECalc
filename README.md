@@ -7,10 +7,18 @@ Source Code: src
 
 External Recources: rsc
 
-To Use:
+To Use for Mac:
   
-  1. Download Project
+  1. Download DEC_Nac.jar and "Start DECalc.sh"
   2. Move the DEC_Mac.jar file to somewhere convenient
   3. Move the "Start DECalc.sh" file to the same directory as the .jar file
   4. Right-click "Start DECalc.sh" -> Get Info -> Open With -> Other -> Terminal 
-  5. Enjoy!
+  5. Double-Click "Start DECalc.sh"
+  6. Enjoy!
+
+To Use for Windows:
+  
+  1. Download Project
+  2. Move the DEC_Windows64.jar file to somewhere convenient
+  3. Double-Click DEC_Windows64.jar
+  4. Enjoy!
