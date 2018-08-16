@@ -22,3 +22,6 @@ To Use for Windows:
   2. Move the DEC_Windows64.jar file to somewhere convenient
   3. Double-Click DEC_Windows64.jar
   4. Enjoy!
+
+
+IMPORTANT: The R Script is currently set up to run comparisons with metadata files that have the titles "Treatment" and "Type" for each of the two columns. 
